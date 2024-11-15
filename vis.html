@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visual Novel Demo</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; }
+        #text-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            text-align: center;
+            max-width: 80%;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #debug { 
+            position: fixed; 
+            top: 10px; 
+            left: 10px; 
+            color: white; 
+            font-family: monospace; 
+            z-index: 1000; 
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
+</head>
+<body>
+    <div id="text-overlay"></div>
+    <div id="debug"></div>
+    <script>
+        // Debug logging
+        const debug = document.getElementById('debug');
+        function log(msg) {
+            debug.textContent += msg + '\n';
+            console.log(msg);
+        }
+
+        // Initialize PixiJS
+        const app = new PIXI.Application({
+            width: window.innerWidth,
+            height: window.innerHeight,
+            backgroundColor: 0x000000,
+            resolution: window.devicePixelRatio || 1,
+            antialias: true
+        });
+        document.body.appendChild(app.view);
+
+        // State management
+        let currentVerseIndex = 0;
+        const verses = [
+            "First verse of the text...",
+            "Second verse of the text...",
+            "Third verse of the text..."
+        ];
+
+        // Load assets
+        let geometryPhase = false;
+        let contourData;
+        let originalImage;
+        let geometryContainer;
+        
+        // Create container for geometry
+        geometryContainer = new PIXI.Container();
+        app.stage.addChild(geometryContainer);
+
+        // After loading assets:
+        Promise.all([
+    fetch('/pile1_features.json').then(r => r.json()),
+    PIXI.Assets.load('/pile1.jpg')
+]).then(([json, texture]) => {
+    // Configuration parameters
+    const CONFIG = {
+        DEBUG_MODE: false,
+        PADDING_PERCENT: 0.01,  // 1% padding on each side
+        FALL_DURATION: 1.0,
+        TOTAL_DURATION: 10,
+        LEVEL_OFFSET: 2,
+        LEVEL_DURATION: 4
+    };
+    
+    log('Assets loaded');
+    contourData = json;
+    originalImage = new PIXI.Sprite(texture);
+    
+    // Calculate scale with configurable padding
+    const imageScale = Math.min(
+        (app.screen.width * (1 - CONFIG.PADDING_PERCENT * 2)) / texture.width,
+        (app.screen.height * (1 - CONFIG.PADDING_PERCENT * 2)) / texture.height
+    );
+    
+    const centerX = app.screen.width / 2;
+    const centerY = app.screen.height / 2;
+    
+    // Setup original image
+    originalImage.anchor.set(0.5);
+    originalImage.position.set(centerX, centerY);
+    originalImage.scale.set(imageScale);
+    originalImage.alpha = 0;
+    app.stage.addChild(originalImage);
+
+    // Setup geometry container
+    geometryContainer = new PIXI.Container();
+    geometryContainer.position.set(centerX, centerY);
+    app.stage.addChild(geometryContainer);
+
+    // Debug visualization
+    if (CONFIG.DEBUG_MODE) {
+        const debugShapes = new PIXI.Graphics();
+        debugShapes.lineStyle(2, 0xFF0000);
+        debugShapes.drawRect(-texture.width * imageScale / 2, -texture.height * imageScale / 2, 
+                            texture.width * imageScale, texture.height * imageScale);
+        geometryContainer.addChild(debugShapes);
+        log('Debug visualization enabled');
+        log(`Padding: ${CONFIG.PADDING_PERCENT * 100}%`);
+        log(`Scaled dimensions: ${texture.width * imageScale} x ${texture.height * imageScale}`);
+    }
+
+    const FALL_OFFSET = -window.innerHeight;
+    const tl = gsap.timeline({ 
+        paused: true,
+        onStart: () => log('Animation started'),
+        onComplete: () => log('Animation completed')
+    });
+
+    // Process each level
+    contourData.levels.forEach((level, levelIndex) => {
+        const levelStartTime = levelIndex * CONFIG.LEVEL_OFFSET;
+        
+        level.forEach((segment, segmentIndex) => {
+            const segmentContainer = new PIXI.Container();
+            geometryContainer.addChild(segmentContainer);
+            
+            const graphics = new PIXI.Graphics();
+            graphics.lineStyle(1, 0xFFFFFF);
+            
+            const startX = (segment.start.x - texture.width/2) * imageScale;
+            const startY = (segment.start.y - texture.height/2) * imageScale;
+            const endX = (segment.end.x - texture.width/2) * imageScale;
+            const endY = (segment.end.y - texture.height/2) * imageScale;
+            
+            graphics.moveTo(startX, startY);
+            graphics.lineTo(endX, endY);
+            
+            segmentContainer.addChild(graphics);
+            
+            segmentContainer.y = FALL_OFFSET;
+            segmentContainer.alpha = 0;
+            
+            const segmentDelay = levelStartTime + (CONFIG.LEVEL_DURATION * (segmentIndex / level.length));
+            
+            tl.to(segmentContainer, {
+                alpha: 1,
+                duration: 0.1
+            }, segmentDelay);
+            
+            tl.to(segmentContainer, {
+                y: 0,
+                duration: CONFIG.FALL_DURATION,
+                ease: "power2.out"
+            }, segmentDelay);
+        });
+    });
+
+    tl.to(originalImage, {
+        alpha: 1,
+        duration: 2,
+        ease: "power2.inOut"
+    }, CONFIG.TOTAL_DURATION - 2);
+
+    tl.to(geometryContainer, {
+        alpha: 0,
+        duration: 2,
+        ease: "power2.inOut"
+    }, CONFIG.TOTAL_DURATION - 2);
+
+    window.geometryTimeline = tl;
+    log('Setup complete');
+}).catch(error => {
+    log('Error loading assets: ' + error);
+});
+        
+
+        function showNextVerse() {
+            if (currentVerseIndex < verses.length) {
+                const textOverlay = document.getElementById('text-overlay');
+                gsap.to(textOverlay, {
+                    opacity: 0,
+                    duration: 0.5,
+                    onComplete: () => {
+                        textOverlay.textContent = verses[currentVerseIndex];
+                        gsap.to(textOverlay, {
+                            opacity: 1,
+                            duration: 0.5
+                        });
+                        currentVerseIndex++;
+                    }
+                });
+            }
+        }
+
+        // Key controls
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                showNextVerse();
+            } else if (e.code === 'Enter') {
+                if (window.geometryTimeline && !geometryPhase) {
+                    log('Starting geometry animation');
+                    window.geometryTimeline.play();
+                    geometryPhase = true;
+                }
+            }
+        });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            app.renderer.resize(window.innerWidth, window.innerHeight);
+            if (originalImage) {
+                originalImage.position.set(app.screen.width / 2, app.screen.height / 2);
+            }
+        });
+    </script>
+</body>
+</html>
