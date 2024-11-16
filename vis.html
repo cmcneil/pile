@@ -51,11 +51,49 @@
         document.body.appendChild(app.view);
 
         // State management
-        let currentVerseIndex = 0;
+        // let currentVerseIndex = 0;
+
+        // First, let's create a proper data structure for our text
+        // const TEXT_CONFIG = {
+        //     FONT_SIZE: '24px',
+        //     FONT_FAMILY: 'Georgia',
+        //     LINE_HEIGHT: 32,
+        //     COLOR: '#FFFFFF',
+        //     SLIDE_DURATION: 0.5,
+        //     PUSH_DURATION: 0.4,
+        //     VERSE_PADDING: 20,
+        //     // Distance text slides in from
+        //     SLIDE_DISTANCE: 100
+        // };
+
+        const TEXT_CONFIG = {
+            FONT_SIZE: '24px',
+            FONT_FAMILY: 'Georgia',
+            LINE_HEIGHT: 32,
+            COLOR: '#FFFFFF',
+            SLIDE_DURATION: 0.5,
+            PUSH_DURATION: 0.4,
+            SLIDE_DISTANCE: 100,
+            BOTTOM_PADDING: 50  // Padding from bottom of screen
+        };
+
         const verses = [
-            "First verse of the text...",
-            "Second verse of the text...",
-            "Third verse of the text..."
+            {
+                id: 1,
+                lines: [
+                    "First line of the first verse slides in from left",
+                    "Second line slides from the right side",
+                    "Third line comes in from the left again"
+                ]
+            },
+            {
+                id: 2,
+                lines: [
+                    "The second verse begins with this line",
+                    "Following with another thoughtful line",
+                    "And concluding with something meaningful"
+                ]
+            }
         ];
 
         // Load assets
@@ -70,67 +108,88 @@
 
         // After loading assets:
         Promise.all([
-    fetch('/pile1_features.json').then(r => r.json()),
-    PIXI.Assets.load('/pile1.jpg')
-]).then(([json, texture]) => {
-    // Configuration parameters
-    const CONFIG = {
-        DEBUG_MODE: false,
-        PADDING_PERCENT: 0.01,  // 1% padding on each side
-        FALL_DURATION: 1.0,
-        TOTAL_DURATION: 10,
-        LEVEL_OFFSET: 2,
-        LEVEL_DURATION: 4
-    };
-    
-    log('Assets loaded');
-    contourData = json;
-    originalImage = new PIXI.Sprite(texture);
-    
-    // Calculate scale with configurable padding
-    const imageScale = Math.min(
-        (app.screen.width * (1 - CONFIG.PADDING_PERCENT * 2)) / texture.width,
-        (app.screen.height * (1 - CONFIG.PADDING_PERCENT * 2)) / texture.height
-    );
-    
-    const centerX = app.screen.width / 2;
-    const centerY = app.screen.height / 2;
-    
-    // Setup original image
-    originalImage.anchor.set(0.5);
-    originalImage.position.set(centerX, centerY);
-    originalImage.scale.set(imageScale);
-    originalImage.alpha = 0;
-    app.stage.addChild(originalImage);
+            fetch('/pile1_features.json').then(r => r.json()),
+            PIXI.Assets.load('/pile1.jpg')
+        ]).then(([json, texture]) => {
+            // Configuration parameters
+            const CONFIG = {
+                DEBUG_MODE: false,
+                PADDING_PERCENT: 0.01,
+                FALL_DURATION: 1.0,
+                TOTAL_DURATION: 10,
+                ACCELERATION: 1,
+                RASTER_FADE: {
+                    START_TIME: 5,
+                    DURATION: 7
+                },
+                GEOMETRY_FADE: {
+                    START_TIME: 6,
+                    DURATION: 6
+                },
+            };
+            
+            log('Assets loaded');
+            contourData = json;
+            originalImage = new PIXI.Sprite(texture);
+            
+            const imageScale = Math.min(
+                (app.screen.width * (1 - CONFIG.PADDING_PERCENT * 2)) / texture.width,
+                (app.screen.height * (1 - CONFIG.PADDING_PERCENT * 2)) / texture.height
+            );
+            
+            const centerX = app.screen.width / 2;
+            const centerY = app.screen.height / 2;
+            
+            // Setup original image
+            originalImage.anchor.set(0.5);
+            originalImage.position.set(centerX, centerY);
+            originalImage.scale.set(imageScale);
+            originalImage.alpha = 0;
+            app.stage.addChild(originalImage);
 
-    // Setup geometry container
-    geometryContainer = new PIXI.Container();
-    geometryContainer.position.set(centerX, centerY);
-    app.stage.addChild(geometryContainer);
+            // Setup geometry container
+            geometryContainer = new PIXI.Container();
+            geometryContainer.position.set(centerX, centerY);
+            app.stage.addChild(geometryContainer);
 
-    // Debug visualization
-    if (CONFIG.DEBUG_MODE) {
-        const debugShapes = new PIXI.Graphics();
-        debugShapes.lineStyle(2, 0xFF0000);
-        debugShapes.drawRect(-texture.width * imageScale / 2, -texture.height * imageScale / 2, 
-                            texture.width * imageScale, texture.height * imageScale);
-        geometryContainer.addChild(debugShapes);
-        log('Debug visualization enabled');
-        log(`Padding: ${CONFIG.PADDING_PERCENT * 100}%`);
-        log(`Scaled dimensions: ${texture.width * imageScale} x ${texture.height * imageScale}`);
+            // Debug visualization
+            if (CONFIG.DEBUG_MODE) {
+                const debugShapes = new PIXI.Graphics();
+                debugShapes.lineStyle(2, 0xFF0000);
+                debugShapes.drawRect(-texture.width * imageScale / 2, -texture.height * imageScale / 2, 
+                                    texture.width * imageScale, texture.height * imageScale);
+                geometryContainer.addChild(debugShapes);
+                log('Debug visualization enabled');
+                log(`Padding: ${CONFIG.PADDING_PERCENT * 100}%`);
+                log(`Scaled dimensions: ${texture.width * imageScale} x ${texture.height * imageScale}`);
+            }
+
+            const FALL_OFFSET = -window.innerHeight;
+            const tl = gsap.timeline({ 
+                paused: true,
+                onStart: () => log('Animation started'),
+                onComplete: () => log('Animation completed')
+            });
+
+            const totalSegments = contourData.levels.reduce((sum, level) => sum + level.length, 0);
+    let segmentCount = 0;
+
+    // Function to calculate normalized timing based on progress
+    function getSegmentTiming(segmentIndex) {
+        const linearProgress = segmentIndex / totalSegments;
+        if (CONFIG.ACCELERATION === 0) {
+            return linearProgress * (CONFIG.TOTAL_DURATION - 2); // Linear interpolation
+        }
+        
+        // Apply power curve but maintain total duration
+        // const acceleratedProgress = Math.pow(linearProgress, 1 + CONFIG.ACCELERATION);
+        const acceleratedProgress = 1 - Math.pow(1 - linearProgress, 1 + CONFIG.ACCELERATION);
+
+        return acceleratedProgress * (CONFIG.TOTAL_DURATION - 2);
     }
-
-    const FALL_OFFSET = -window.innerHeight;
-    const tl = gsap.timeline({ 
-        paused: true,
-        onStart: () => log('Animation started'),
-        onComplete: () => log('Animation completed')
-    });
 
     // Process each level
     contourData.levels.forEach((level, levelIndex) => {
-        const levelStartTime = levelIndex * CONFIG.LEVEL_OFFSET;
-        
         level.forEach((segment, segmentIndex) => {
             const segmentContainer = new PIXI.Container();
             geometryContainer.addChild(segmentContainer);
@@ -147,17 +206,20 @@
             graphics.lineTo(endX, endY);
             
             segmentContainer.addChild(graphics);
-            
             segmentContainer.y = FALL_OFFSET;
             segmentContainer.alpha = 0;
+
+            // Calculate timing for this segment
+            const segmentDelay = getSegmentTiming(segmentCount);
+            segmentCount++;
             
-            const segmentDelay = levelStartTime + (CONFIG.LEVEL_DURATION * (segmentIndex / level.length));
-            
+            // Fade in
             tl.to(segmentContainer, {
                 alpha: 1,
                 duration: 0.1
             }, segmentDelay);
             
+            // Fall down
             tl.to(segmentContainer, {
                 y: 0,
                 duration: CONFIG.FALL_DURATION,
@@ -166,48 +228,177 @@
         });
     });
 
+    // Fade in the original image
     tl.to(originalImage, {
         alpha: 1,
-        duration: 2,
-        ease: "power2.inOut"
-    }, CONFIG.TOTAL_DURATION - 2);
+        duration: CONFIG.RASTER_FADE.DURATION,
+        ease: "power1.inOut"
+    }, CONFIG.RASTER_FADE.START_TIME);
 
+    // Fade out the geometry
     tl.to(geometryContainer, {
         alpha: 0,
-        duration: 2,
-        ease: "power2.inOut"
-    }, CONFIG.TOTAL_DURATION - 2);
+        duration: CONFIG.GEOMETRY_FADE.DURATION,
+        ease: "power1.inOut"
+    }, CONFIG.GEOMETRY_FADE.START_TIME);
 
     window.geometryTimeline = tl;
+    const textSystem = setupTextAnimation();
     log('Setup complete');
-}).catch(error => {
-    log('Error loading assets: ' + error);
-});
-        
+        }).catch(error => {
+            log('Error loading assets: ' + error);
+        });
 
-        function showNextVerse() {
-            if (currentVerseIndex < verses.length) {
-                const textOverlay = document.getElementById('text-overlay');
-                gsap.to(textOverlay, {
-                    opacity: 0,
-                    duration: 0.5,
-                    onComplete: () => {
-                        textOverlay.textContent = verses[currentVerseIndex];
-                        gsap.to(textOverlay, {
-                            opacity: 1,
-                            duration: 0.5
+
+        function setupTextAnimation() {
+            const textContainer = new PIXI.Container();
+            textContainer.position.set(
+                app.screen.width / 2,
+                app.screen.height - TEXT_CONFIG.BOTTOM_PADDING
+            );
+            app.stage.addChild(textContainer);
+
+            let currentVerse = 0;
+            let currentLine = 0;
+            let activeLines = [];
+
+            function createTextLine(content) {
+                const text = new PIXI.Text(content, {
+                    fontSize: TEXT_CONFIG.FONT_SIZE,
+                    fontFamily: TEXT_CONFIG.FONT_FAMILY,
+                    fill: TEXT_CONFIG.COLOR,
+                    align: 'center'
+                });
+                text.anchor.set(0.5);
+                return text;
+            }
+
+            function getTargetY(lineIndex) {
+                // Position includes space for next line
+                return -TEXT_CONFIG.LINE_HEIGHT * (activeLines.length - lineIndex);
+            }
+
+            function animateNextLine() {
+                if (currentVerse >= verses.length) return false;
+                
+                const verse = verses[currentVerse];
+                if (currentLine >= verse.lines.length) {
+                    currentVerse++;
+                    currentLine = 0;
+                    // Clear lines when moving to next verse
+                    activeLines.forEach(line => {
+                        gsap.to(line, {
+                            alpha: 0,
+                            y: line.position.y - TEXT_CONFIG.LINE_HEIGHT,
+                            duration: TEXT_CONFIG.PUSH_DURATION,
+                            ease: "power2.inOut",
+                            onComplete: () => textContainer.removeChild(line)
                         });
-                        currentVerseIndex++;
+                    });
+                    activeLines = [];
+                    if (currentVerse >= verses.length) return false;
+                }
+
+                const line = verse.lines[currentLine];
+                const textLine = createTextLine(line);
+                
+                // Set initial position
+                const slideFromRight = currentLine % 2 === 1;
+                textLine.position.x = slideFromRight ? 
+                    TEXT_CONFIG.SLIDE_DISTANCE : 
+                    -TEXT_CONFIG.SLIDE_DISTANCE;
+                textLine.position.y = 0;  // Start at entry point
+                textLine.alpha = 0;
+
+                textContainer.addChild(textLine);
+                activeLines.push(textLine);
+
+                // Create timeline for this line's animations
+                const tl = gsap.timeline();
+
+                // First: animate existing lines up to make space
+                activeLines.forEach((line, index) => {
+                    if (index < activeLines.length - 1) {  // Don't animate the new line yet
+                        tl.to(line, {
+                            y: getTargetY(index),
+                            duration: TEXT_CONFIG.PUSH_DURATION,
+                            ease: "power2.inOut"
+                        }, 0);  // The "0" means these all happen together
                     }
                 });
+
+                // Then: slide in the new line and move it up
+                tl.to(textLine, {
+                    x: 0,
+                    alpha: 1,
+                    duration: TEXT_CONFIG.SLIDE_DURATION,
+                    ease: "power2.out"
+                }, 0);  // Start at same time as pushing up
+
+                tl.to(textLine, {
+                    y: getTargetY(activeLines.length - 1),
+                    duration: TEXT_CONFIG.PUSH_DURATION,
+                    ease: "power2.inOut"
+                }, 0);  // Start at same time as sliding in
+
+                currentLine++;
+                return true;
             }
+
+            // Handle space key for text progression
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    animateNextLine();
+                }
+            });
+
+            function clearText() {
+                activeLines.forEach(line => {
+                    gsap.to(line, {
+                        alpha: 0,
+                        duration: 0.5,
+                        onComplete: () => {
+                            textContainer.removeChild(line);
+                        }
+                    });
+                });
+                activeLines = [];
+                currentVerse = 0;
+                currentLine = 0;
+            }
+
+            return {
+                container: textContainer,
+                animateNextLine,
+                clearText
+            };
         }
+        
+
+        // function showNextVerse() {
+        //     if (currentVerseIndex < verses.length) {
+        //         const textOverlay = document.getElementById('text-overlay');
+        //         gsap.to(textOverlay, {
+        //             opacity: 0,
+        //             duration: 0.5,
+        //             onComplete: () => {
+        //                 textOverlay.textContent = verses[currentVerseIndex];
+        //                 gsap.to(textOverlay, {
+        //                     opacity: 1,
+        //                     duration: 0.5
+        //                 });
+        //                 currentVerseIndex++;
+        //             }
+        //         });
+        //     }
+        // }
 
         // Key controls
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                showNextVerse();
-            } else if (e.code === 'Enter') {
+            // if (e.code === 'Space') {
+            //     showNextVerse();
+            if (e.code === 'Enter') {
                 if (window.geometryTimeline && !geometryPhase) {
                     log('Starting geometry animation');
                     window.geometryTimeline.play();
