@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).parent
 
 @app.route('/')
 def serve_html():
-    return send_file('vis.html')
+    return send_file('index.html')
 
 @app.route('/<path:filename>')
 def serve_file(filename):
