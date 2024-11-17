@@ -64,7 +64,7 @@
       }
     ],
     "animation": {
-      "type": "slide-stack",
+      "type": "slidestack",
       "config": {
         "slideDistance": 100,
         "slideDuration": 0.5,

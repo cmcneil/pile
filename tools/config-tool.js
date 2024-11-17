@@ -491,7 +491,7 @@ async function saveScene() {
         text: {
             verses: currentConfig.verses,
             animation: {
-                type: "slide-stack",
+                type: "slidestack",
                 config: {
                     slideDistance: 100,
                     slideDuration: 0.5,
@@ -589,7 +589,7 @@ function exportConfig() {
         text: {
             verses: currentConfig.verses,
             animation: {
-                type: "slide-stack",
+                type: "slidestack",
                 config: {
                     slideDistance: 100,
                     slideDuration: 0.5,

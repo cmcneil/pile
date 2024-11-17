@@ -19,5 +19,5 @@ export function getGeometryType(type) {
 
 // Helper function to get the correct asset path for a geometry type
 export function getGeometryAssetPath(type, filename) {
-    return `assets/geometry/${type}/${filename}`;
+    return `/assets/geometry/${type}/${filename}`;
 }

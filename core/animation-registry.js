@@ -1,7 +1,7 @@
 import { FallingAnimation } from '../effects/geometry/animations/falling.js';
 import { WaterFallAnimation } from '../effects/geometry/animations/waterfall.js';
 import { PanZoomAnimation } from '../effects/image/animations/panzoom.js';
-import { SlideStackAnimation } from '../effects/text/animations/slide-stack.js';
+import { SlideStackAnimation } from '../effects/text/animations/slidestack.js';
 
 export const GeometryAnimations = {
     'falling': FallingAnimation,
@@ -13,7 +13,7 @@ export const ImageAnimations = {
 };
 
 export const TextAnimations = {
-    'slide-stack': SlideStackAnimation
+    'slidestack': SlideStackAnimation
 };
 
 export function getGeometryAnimation(type) {

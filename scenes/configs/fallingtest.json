@@ -1,0 +1,47 @@
+{
+  "id": "fallingtest",
+  "image": {
+    "path": "pile1.jpg",
+    "padding": 0.01,
+    "geometry": {
+      "type": "lineart",
+      "data": "fallingtest.json",
+      "animation": {
+        "type": "falling",
+        "config": {
+          "acceleration": 2,
+          "fallDuration": 1,
+          "fadeIn": {
+            "startTime": 3,
+            "duration": 5
+          },
+          "fadeOut": {
+            "startTime": 4,
+            "duration": 4
+          }
+        }
+      }
+    }
+  },
+  "text": {
+    "verses": [
+      {
+        "id": 1,
+        "lines": [
+          "asdaskjlhdkjash",
+          "askdhakjsdhasjkdha",
+          "askjdaskjlchasc"
+        ]
+      }
+    ],
+    "animation": {
+      "type": "slidestack",
+      "config": {
+        "slideDistance": 100,
+        "slideDuration": 0.5,
+        "pushDuration": 0.4,
+        "bottomPadding": 50
+      }
+    }
+  }
+}

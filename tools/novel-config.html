@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Novel Configuration Tool</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            height: 100vh;
+            background: #f0f0f0;
+        }
+
+        .novel-list {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .scene-pool {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .scene-sequence {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .scene-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .scene-item:hover {
+            background: #e0e0e0;
+        }
+
+        .sequence-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="novel-list">
+        <h2>Novels</h2>
+        <button onclick="createNewNovel()">New Novel</button>
+        <div id="novelListContainer"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="scene-pool">
+            <h2>Available Scenes</h2>
+            <div id="scenePool"></div>
+        </div>
+
+        <div class="scene-sequence">
+            <h2>Novel Sequence</h2>
+            <div>
+                <label>Novel ID:</label>
+                <input type="text" id="novelId">
+            </div>
+            <div>
+                <label>Title:</label>
+                <input type="text" id="novelTitle">
+            </div>
+            <div id="sceneSequence"></div>
+            <button onclick="saveNovel()">Save Novel</button>
+        </div>
+    </div>
+
+    <script src="novel-config.js"></script>
+</body>
+</html>

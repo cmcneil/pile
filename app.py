@@ -7,7 +7,7 @@ import shutil
 
 # Import our geometry processors
 from effects.geometry.extractors.pointcloud_processor import extract_points
-from effects.geometry.extractors.lineart_processor import extract_paths
+import effects.geometry.extractors.lineart_processor as lineart
 
 app = Flask(__name__)
 
@@ -17,11 +17,14 @@ ASSETS_DIR = BASE_DIR / 'assets'
 IMAGES_DIR = ASSETS_DIR / 'images'
 GEOMETRY_DIR = ASSETS_DIR / 'geometry'
 SCENES_DIR = BASE_DIR / 'scenes' / 'configs'
+NOVELS_DIR = BASE_DIR / 'novels'
+
 
 # Ensure directories exist
 IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 GEOMETRY_DIR.mkdir(parents=True, exist_ok=True)
 SCENES_DIR.mkdir(parents=True, exist_ok=True)
+NOVELS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Configure allowed files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -108,7 +111,18 @@ def save_scene():
                 edge_weight=0.8
             )
         elif geometry_type == 'lineart':
-            geometry_data = extract_paths(str(image_path))
+            fname = os.path.basename(image_path).split('.')[0]
+            # geometry_data = extract_paths(str(image_path))
+            features, debug_images = lineart.process_image_hierarchical(image_path)
+
+            # Save features
+            print(f"Processed {len(features)} levels")
+            for i, level in enumerate(features):
+                print(f"Level {i} paths: {len(level)}")
+
+            geometry_data = {
+                'levels': features
+            }
         else:
             return jsonify({'error': 'Unknown geometry type'}), 400
         
@@ -175,6 +189,39 @@ def get_geometry_types():
             'description': 'Extracts vector lines from image'
         }
     })
+
+### Novel Code:
+@app.route('/novel/<novel_id>')
+def view_novel(novel_id):
+    """Serve the novel viewer with a specific novel"""
+    return render_template('novel.html', novel_id=novel_id)
+
+@app.route('/api/novels', methods=['GET'])
+def list_novels():
+    novels = []
+    for config_file in NOVELS_DIR.glob('*.json'):
+        with open(config_file) as f:
+            novels.append(json.load(f))
+    return jsonify(novels)
+
+@app.route('/api/novels/<novel_id>', methods=['GET'])
+def get_novel(novel_id):
+    novel_path = NOVELS_DIR / f"{novel_id}.json"
+    if not novel_path.exists():
+        return jsonify({'error': 'Novel not found'}), 404
+    
+    with open(novel_path) as f:
+        return jsonify(json.load(f))
+
+@app.route('/api/novels', methods=['POST'])
+def save_novel():
+    novel_data = request.json
+    novel_path = NOVELS_DIR / f"{novel_data['id']}.json"
+    
+    with open(novel_path, 'w') as f:
+        json.dump(novel_data, f, indent=2)
+    
+    return jsonify({'success': True})
 
 # Error handlers
 @app.errorhandler(404)
