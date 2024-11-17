@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scene Configuration Tool</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            height: 100vh;
+            background: #f0f0f0;
+        }
+
+        .scene-list {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .scene-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .scene-item:hover {
+            background: #f5f5f5;
+        }
+
+        .scene-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .config-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .preview-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .preview-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background: #1a1a1a;
+        }
+
+        .image-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: center center;
+            cursor: grab;
+        }
+
+        .image-wrapper img {
+            transform-origin: center center;
+            max-width: none;
+        }
+
+        .image-wrapper:active {
+            cursor: grabbing;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .animation-config {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="scene-list">
+        <h2>Scenes</h2>
+        <button onclick="createNewScene()">New Scene</button>
+        <div id="sceneListContainer"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="config-panel">
+            <h2>Scene Configuration</h2>
+            
+            <div class="form-group">
+                <label>Scene ID:</label>
+                <input type="text" id="sceneId">
+            </div>
+
+            <div class="form-group">
+                <label>Animation Type:</label>
+                <select id="animationType" onchange="updateAnimationUI()">
+                    <option value="">Select Type...</option>
+                    <optgroup label="Image Animations">
+                    </optgroup>
+                    <optgroup label="Geometry Animations">
+                    </optgroup>
+                </select>
+            </div>
+
+            <div id="animationConfig" class="animation-config">
+                <!-- In the preview-panel section -->
+                <div id="keyframeControls">
+                    <button onclick="captureKeyframe()">Capture Current View</button>
+                    <div id="keyframeList"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Image:</label>
+                <input type="file" id="imageUpload" accept="image/*">
+                <div id="currentImage"></div>
+            </div>
+
+            <div class="verses-section">
+                <h3>Verses</h3>
+                <button onclick="addVerse()">Add Verse</button>
+                <div id="verseList"></div>
+            </div>
+
+            <button onclick="saveScene()">Save Scene</button>
+        </div>
+
+        <div class="preview-panel">
+            <div class="preview-container">
+                <div class="image-wrapper">
+                    <img id="previewImage">
+                </div>
+                <div class="zoom-controls">
+                    <button onclick="zoomIn()">+</button>
+                    <button onclick="zoomOut()">-</button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script src="tools/animation-schemas.js"></script>
+    <script src="tools/config-tool.js"></script>
+</body>
+</html>

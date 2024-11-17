@@ -1,85 +1,140 @@
-import { LineArtGeometry } from '../effects/geometry/types/lineart.js';
-import { FallingAnimation } from '../effects/geometry/animations/falling.js';
-import { SlideStackAnimation } from '../effects/text/animations/slide-stack.js';
+import { getGeometryType, getGeometryAssetPath } from './geometry-registry.js';
+import { getGeometryAnimation, getImageAnimation, getTextAnimation } from './animation-registry.js';
+
 
 export class SceneManager {
     constructor(app) {
         this.app = app;
         this.textAnimation = null;
-        this.geometryTimeline = null;
+        this.imageAnimation = null;  // Replaces geometryTimeline/geometryAnimation
+    }
+
+    handleTextProgress() {
+        if (this.textAnimation) {
+            this.textAnimation.animateNextLine();
+        }
+    }
+
+    handleImageProgress() {  // Renamed from handleGeometryProgress
+        if (this.imageAnimation) {
+            if (this.imageAnimation.handleKeyPress) {
+                this.imageAnimation.handleKeyPress();
+            } else if (this.imageAnimation.timeline) {
+                this.imageAnimation.timeline.play();
+            }
+        }
+    }
+
+    handleGeometryProgress() {
+        if (this.geometryAnimation) {
+            if (this.geometryAnimation.handleKeyPress) {
+                this.geometryAnimation.handleKeyPress();
+            } else if (this.geometryAnimation.timeline) {
+                this.geometryAnimation.timeline.play();
+            }
+        }
+    }
+
+    setupControls(config) {
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && this.textAnimation) {
+                e.preventDefault();
+                console.log('Space pressed - handling text progress');
+                this.handleTextProgress();
+            } else if (e.code === 'Enter') {
+                e.preventDefault();
+                console.log('Enter pressed');
+                if (this.imageAnimation) {
+                    console.log('Handling image animation');
+                    console.log('Current image animation:', this.imageAnimation);
+                    this.imageAnimation.handleKeyPress();
+                }
+                if (this.geometryAnimation) {
+                    console.log('Handling geometry animation');
+                    this.geometryAnimation.handleKeyPress();
+                }
+            }
+        });
     }
 
     async loadScene(config) {
-        // Load image
-        const texture = await PIXI.Assets.load(config.image.path);
+        // Load and setup base image
+        const texture = await PIXI.Assets.load('/assets/images/' + config.image.path);
         const image = new PIXI.Sprite(texture);
         
         // Calculate scale
+        const canvasScale = 1.0 - (config.image.padding || 0);
         const imageScale = Math.min(
-            (this.app.screen.width * 0.8) / texture.width,
-            (this.app.screen.height * 0.8) / texture.height
+            (this.app.screen.width * canvasScale) / texture.width,
+            (this.app.screen.height * canvasScale) / texture.height
         );
         
-        // Setup image
+        // Setup base image
         image.anchor.set(0.5);
         image.position.set(this.app.screen.width / 2, this.app.screen.height / 2);
         image.scale.set(imageScale);
         image.alpha = 0;
-        
-        // Load geometry
-        const geometryData = await fetch(config.image.geometry.data).then(r => r.json());
-        const geometry = new LineArtGeometry(geometryData);
-        
-        // Setup geometry container
-        const geometryContainer = new PIXI.Container();
-        geometryContainer.position.set(this.app.screen.width / 2, this.app.screen.height / 2);
-        geometryContainer.originalImage = image;
-        
-        // Create animations
-        const geometryAnimation = new FallingAnimation(geometry, {
-            ...config.image.geometry.animation.config,
-            duration: config.duration // Pass total duration to animation
-        });
-        this.textAnimation = new SlideStackAnimation(config.text.animation.config);
+
+        // Create container for image and its animations
+        const imageContainer = new PIXI.Container();
+        imageContainer.position.set(this.app.screen.width / 2, this.app.screen.height / 2);
+        imageContainer.originalImage = image;
         
         // Add containers to stage
+        this.app.stage.addChild(imageContainer);
         this.app.stage.addChild(image);
-        this.app.stage.addChild(geometryContainer);
-        
-        // Create text container and set up verses
-        const textContainer = this.textAnimation.createContainer(this.app);
-        this.app.stage.addChild(textContainer);
-        
-        // Pass all verses to the text animation
-        if (config.text.verses && config.text.verses.length > 0) {
-            this.textAnimation.setVerses(textContainer, config.text.verses);
+
+        // Handle image animation setup
+        if (config.image.animation) {
+            const AnimationClass = getImageAnimation(config.image.animation.type);
+            const animation = new AnimationClass(config.image.animation.config);
+            
+            this.imageAnimation = animation.createTimeline(
+                imageContainer,
+                imageScale,
+                { width: texture.width, height: texture.height },
+                this.app.renderer
+            );
         }
         
-        // Create but don't start timeline
-        this.geometryTimeline = geometryAnimation.createTimeline(
-            geometryContainer, 
-            imageScale,
-            { width: texture.width, height: texture.height }
-        );
-        this.geometryTimeline.pause();
+        // If there's geometry, set it up
+        if (config.image.geometry) {
+            const GeometryClass = getGeometryType(config.image.geometry.type);
+            const geometryPath = getGeometryAssetPath(
+                config.image.geometry.type,
+                config.image.geometry.data
+            );
+            
+            const geometryData = await fetch(geometryPath).then(r => r.json());
+            const geometry = new GeometryClass(geometryData);
 
-        // Set up verses using the correct method name
-        if (config.text.verses && config.text.verses.length > 0) {
-            this.textAnimation.setVerses(textContainer, config.text.verses);
+            const GeometryAnimationClass = getGeometryAnimation(config.image.geometry.animation.type);
+            const geometryAnimation = new GeometryAnimationClass(geometry, {
+                ...config.image.geometry.animation.config,
+                duration: config.duration
+            });
+            
+            this.imageAnimation = geometryAnimation.createTimeline(
+                imageContainer,
+                imageScale,
+                { width: texture.width, height: texture.height },
+                this.app.renderer
+            );
         }
 
-        // Set up keyboard controls
-        this.setupControls();
-    }
-
-    setupControls() {
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && this.textAnimation) {
-                e.preventDefault();
-                this.textAnimation.animateNextLine();
-            } else if (e.code === 'Enter' && this.geometryTimeline) {
-                this.geometryTimeline.play();
+        // Setup text if present
+        if (config.text) {
+            const TextAnimationClass = getTextAnimation(config.text.animation.type);
+            this.textAnimation = new TextAnimationClass(config.text.animation.config);
+            const textContainer = this.textAnimation.createContainer(this.app);
+            this.app.stage.addChild(textContainer);
+            
+            if (config.text.verses && config.text.verses.length > 0) {
+                this.textAnimation.setVerses(textContainer, config.text.verses);
             }
-        });
+        }
+
+        // Setup controls
+        this.setupControls(config);
     }
 }

@@ -27,11 +27,19 @@ export class FallingAnimation {
     }
 
     createTimeline(container, imageScale, dimensions) {
-        const tl = gsap.timeline();
+        let currentPhase = 0;
+
+        const tl = gsap.timeline({
+            paused: true,
+            onComplete: () => {
+                container.removeChild(container.originalImage);
+            }
+        });
         const totalSegments = this.geometry.getTotalSegments();
         const FALL_OFFSET = -window.innerHeight;
 
         let segmentCount = 0;
+        const segmentContainers = [];
         
         // Process each segment
         for (let i = 0; i < totalSegments; i++) {
@@ -54,6 +62,8 @@ export class FallingAnimation {
             segmentContainer.addChild(graphics);
             segmentContainer.y = FALL_OFFSET;
             segmentContainer.alpha = 0;
+
+            segmentContainers.push(segmentContainer);
 
             const segmentDelay = this.getSegmentTiming(segmentCount, totalSegments);
             segmentCount++;
@@ -89,6 +99,59 @@ export class FallingAnimation {
             }, fadeOut.startTime);
         }
 
-        return tl;
+        tl.addPause();
+
+        tl.to(container.originalImage, {
+            alpha: 0,
+            duration: 1,
+            ease: "power2.inOut",
+            onComplete: () => {
+                this.cleanup(container, segmentContainers, tl);
+            }
+        });
+
+        // Handle user key presses
+        const handleKeyPress = () => {
+            if (currentPhase === 0) {
+                tl.play();
+                currentPhase++;
+            } else if (currentPhase >= 1) {
+                tl.resume();
+                currentPhase++;
+            }
+        };
+
+        return {
+            timeline: tl,
+
+            handleKeyPress
+        }
+    }
+
+    // Cleanup function to release resources
+    cleanup(container, segmentContainers, timeline) {
+        // Stop and clear the GSAP timeline
+        if (timeline) {
+            timeline.kill();
+        }
+
+        // Remove all segment containers and their graphics
+        segmentContainers.forEach(segmentContainer => {
+            segmentContainer.children.forEach(graphic => {
+                graphic.destroy(true);
+            });
+            segmentContainer.removeChildren();
+            container.removeChild(segmentContainer);
+            segmentContainer.destroy(true);
+        });
+
+        // Remove the original image if present
+        if (container.originalImage) {
+            container.removeChild(container.originalImage);
+            container.originalImage.destroy(true);
+        }
+
+        // Detach event listener
+        document.removeEventListener('keydown', this.handleKeyPress);
     }
 }

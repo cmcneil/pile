@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visual Novel</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: black; 
+        }
+        #text-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            text-align: center;
+            max-width: 80%;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #debug { 
+            position: fixed; 
+            top: 10px; 
+            left: 10px; 
+            color: white; 
+            font-family: monospace; 
+            z-index: 1000; 
+        }
+    </style>
+</head>
+<body>
+    <div id="text-overlay"></div>
+    <div id="debug"></div>
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+
+
+    <!-- Application Code -->
+    <script>
+        window.SCENE_ID = "{{ scene_id or 'scene1' }}";
+    </script>
+    <script type="module" src="/core/index.js"></script>
+
+</body>
+</html>

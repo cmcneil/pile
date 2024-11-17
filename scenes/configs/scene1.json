@@ -2,25 +2,29 @@
   "id": "scene1",
   "duration": 10,
   "image": {
-    "path": "assets/images/pile1.jpg",
+    "path": "pile1.jpg",
+    "padding": 0.01,
     "geometry": {
-      "type": "lineart",
-      "data": "assets/geometry/pile1_features.json",
+      "type": "pointcloud",
+      "data": "pile1.json",
       "animation": {
-        "type": "falling",
-        "config": {
-          "acceleration": 2.0,
-          "fallDuration": 1.0,
-          "fadeIn": {
-            "startTime": 3,
-            "duration": 5
-          },
-          "fadeOut": {
-            "startTime": 4,
-            "duration": 4
+          "type": "water-fall",
+          "config": {
+            "particleSize": 2,
+            "gravity": 0.5,
+            "horizontalDispersion": 0.2,
+            "bounce": 0.1,
+            "friction": 0.1,
+            "rasterFade": {
+              "duration": 2,
+              "ease": "power2.inOut"
+            },
+            "pointsFade": {
+              "duration": 8,
+              "stagger": 0.5
+            }
           }
         }
-      }
     }
   },
   "text": {

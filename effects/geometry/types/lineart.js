@@ -1,15 +1,18 @@
 export class LineArtGeometry {
+    static type = 'lineart';
+    
     constructor(data) {
         if (!data.levels) {
-            throw new Error('Geometry data must contain levels array');
+            throw new Error('LineArt geometry data must contain levels array');
         }
         this.levels = data.levels;
         this.validateData();
     }
 
+    // Validation specific to LineArt format
     validateData() {
         if (!Array.isArray(this.levels)) {
-            throw new Error('Geometry data must contain levels array');
+            throw new Error('LineArt geometry data must contain levels array');
         }
         
         this.levels.forEach((level, i) => {
@@ -17,13 +20,7 @@ export class LineArtGeometry {
                 throw new Error(`Level ${i} must be an array`);
             }
 
-            // Log the first segment of each level for debugging
-            if (level.length > 0) {
-                console.log(`Sample segment from level ${i}:`, level[0]);
-            }
-
             level.forEach((segment, j) => {
-                // More permissive validation
                 const valid = segment && 
                     typeof segment === 'object' &&
                     segment.start && segment.end &&
