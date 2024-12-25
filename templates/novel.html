@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Novel Viewer</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: black; 
+        }
+        /* Use your existing scene viewer styles */
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
+    <script>
+        window.NOVEL_ID = "{{ novel_id }}";
+    </script>
+
+<style>
+    #text-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 20px;
+        color: white;
+        z-index: 1000;
+        font-family: Georgia, serif;
+        font-size: 24px;
+        text-align: center;
+        background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    }
+
+    .text-line {
+        margin: 10px 0;
+        opacity: 0;
+        transition: all 0.5s ease-out;
+    }
+</style>
+</head>
+<body>
+    <div id="text-overlay"></div>
+    <div id="debug"></div>
+    
+    <!-- Load your existing scene manager first -->
+    <!-- <script type="module" src="/core/scene.js"></script> -->
+    <script type="module" src="/core/novel-viewer.js"></script>
+</body>
+</html>

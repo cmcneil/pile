@@ -1,31 +1,8 @@
 {
   "id": "scene1",
-  "duration": 10,
   "image": {
     "path": "pile1.jpg",
-    "padding": 0.01,
-    "geometry": {
-      "type": "pointcloud",
-      "data": "pile1.json",
-      "animation": {
-          "type": "water-fall",
-          "config": {
-            "particleSize": 2,
-            "gravity": 0.5,
-            "horizontalDispersion": 0.2,
-            "bounce": 0.1,
-            "friction": 0.1,
-            "rasterFade": {
-              "duration": 2,
-              "ease": "power2.inOut"
-            },
-            "pointsFade": {
-              "duration": 8,
-              "stagger": 0.5
-            }
-          }
-        }
-    }
+    "padding": 0.01
   },
   "text": {
     "verses": [

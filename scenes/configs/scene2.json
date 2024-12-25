@@ -1,79 +1,76 @@
 {
-    "id": "scene2",
-    "duration": 15,
-    "image": {
-      "padding": 0.01,
-      "path": "pile1.jpg",
-      "animation": {
-        "type": "panzoom",
-        "config": {
-            "fadeIn": {
-            "duration": 2,
-            "ease": "power2.inOut"
-            },
-            "fadeOut": {
-            "duration": 2,
-            "ease": "power2.inOut"
-            },
-            "keyframes": [
-            {
-                "view": {
-                "x": 0.5,
-                "y": 0.5,
-                "scale": 1,
-                "duration": 2 
-                }
-            },
-            {
-                "view": {
-                "x": 0.3,
-                "y": 0.4,
-                "scale": 2,
-                "duration": 2
-                }
-            },
-            {
-                "view": {
-                "x": 0.7,
-                "y": 0.6,
-                "scale": 1.5,
-                "duration": 2
-                }
-            }
-            ],
-            "transitionEase": "power2.inOut"
-        }
-    }
-    },
-
-
-    "text": {
-      "verses": [
-        {
-          "id": 1,
-          "lines": [
-            "First line of the first verse slides in from left",
-            "Second line slides from the right side",
-            "Third line comes in from the left again"
-          ]
+  "id": "scene2",
+  "image": {
+    "path": "pile1.jpg",
+    "padding": 0.01,
+    "animation": {
+      "type": "panzoom",
+      "config": {
+        "fadeIn": {
+          "duration": 2,
+          "ease": "power2.inOut"
         },
-        {
-          "id": 2,
-          "lines": [
-            "The second verse begins with this line",
-            "Following with another thoughtful line",
-            "And concluding with something meaningful"
-          ]
-        }
-      ],
-      "animation": {
-        "type": "slidestack",
-        "config": {
-          "slideDistance": 100,
-          "slideDuration": 0.5,
-          "pushDuration": 0.4,
-          "bottomPadding": 50
-        }
+        "fadeOut": {
+          "duration": 2,
+          "ease": "power2.inOut"
+        },
+        "transitionEase": "power2.inOut",
+        "keyframes": [
+          {
+            "view": {
+              "duration": 2,
+              "scale": 1,
+              "x": 0.5,
+              "y": 0.5
+            }
+          },
+          {
+            "view": {
+              "duration": 2,
+              "scale": 2,
+              "x": 0.3,
+              "y": 0.4
+            }
+          },
+          {
+            "view": {
+              "duration": 2,
+              "scale": 1.5,
+              "x": 0.7,
+              "y": 0.6
+            }
+          }
+        ]
+      }
+    }
+  },
+  "text": {
+    "verses": [
+      {
+        "id": 1,
+        "lines": [
+          "First line of the first verse slides in from left",
+          "Second line slides from the right side",
+          "Third line comes in from the left again"
+        ]
+      },
+      {
+        "id": 2,
+        "lines": [
+          "The second verse begins with this line",
+          "Following with another thoughtful line",
+          "And concluding with something meaningful"
+        ]
+      }
+    ],
+    "animation": {
+      "type": "slidestack",
+      "config": {
+        "slideDistance": 100,
+        "slideDuration": 0.5,
+        "pushDuration": 0.4,
+        "bottomPadding": 50
       }
     }
   }
+}

@@ -1,12 +1,25 @@
 export class SlideStackAnimation {
     constructor(config) {
         this.config = config;
-        this.verses = [];
-        this.currentVerseIndex = 0;
+        this.LINE_HEIGHT = 30;
+        this.reset();
+    }
+
+    reset() {
+        this.currentVerse = 0;
         this.currentLine = 0;
         this.activeLines = [];
         this.container = null;
-        this.LINE_HEIGHT = 32;
+    }
+
+    cleanup() {
+        // Remove all text elements
+        if (this.container) {
+            while (this.container.children.length > 0) {
+                this.container.removeChild(this.container.children[0]);
+            }
+        }
+        this.reset();
     }
 
     createContainer(app) {
@@ -23,7 +36,8 @@ export class SlideStackAnimation {
             fontSize: '24px',
             fontFamily: 'Georgia',
             fill: '#FFFFFF',
-            align: 'center'
+            align: 'center',
+            resolution: 2,
         });
         text.anchor.set(0.5);
         return text;
@@ -38,7 +52,7 @@ export class SlideStackAnimation {
     }
 
     getTargetY(lineIndex) {
-        return -this.LINE_HEIGHT * (this.activeLines.length - lineIndex);
+        return -this.LINE_HEIGHT * (this.activeLines.length - lineIndex - 1);
     }
 
     clear(onComplete) {
@@ -126,5 +140,34 @@ export class SlideStackAnimation {
 
         this.currentLine++;
         return true;
+    }
+
+    hasMoreContent() {
+        // Return true if there are more lines in the current verse
+        // or more verses to show
+        return this.currentVerse < this.verses.length || 
+               (this.currentVerse < this.verses.length && 
+                this.currentLine < this.verses[this.currentVerse].lines.length);
+    }
+
+    complete() {
+        console.log('Text animation complete requested');
+        return new Promise(resolve => {
+            // Kill any existing animations
+            gsap.killTweensOf(this.activeLines);
+            
+            // Clear all lines immediately
+            this.activeLines.forEach(line => {
+                this.container.removeChild(line);
+            });
+            this.activeLines = [];
+            
+            // Reset state
+            this.currentVerseIndex = this.verses.length;
+            this.currentLine = 0;
+            
+            console.log('Text animation complete finished');
+            resolve();
+        });
     }
 }

@@ -11,6 +11,10 @@ export class FallingAnimation {
         this.config = config;
     }
 
+    isActive() {
+        return this.isSimulating || this.timeline.isActive();
+    }
+
     supportsGeometry(geometry) {
         return geometry instanceof LineArtGeometry;
     }
@@ -126,6 +130,27 @@ export class FallingAnimation {
 
             handleKeyPress
         }
+    }
+
+    async complete() {
+        return new Promise(resolve => {
+            // If simulation is still running
+            if (this.isSimulating) {
+                // Stop physics simulation
+                this.isSimulating = false;
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                }
+                
+                // Clear physics engine
+                World.clear(this.engine.world);
+                Engine.clear(this.engine);
+            }
+            
+            // Fade out all particles immediately
+            this.timeline.progress(1);
+            resolve();
+        });
     }
 
     // Cleanup function to release resources

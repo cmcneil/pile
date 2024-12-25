@@ -1,5 +1,6 @@
 import { FallingAnimation } from '../effects/geometry/animations/falling.js';
 import { WaterFallAnimation } from '../effects/geometry/animations/waterfall.js';
+import { FadeInAnimation } from '../effects/image/animations/fadein.js';
 import { PanZoomAnimation } from '../effects/image/animations/panzoom.js';
 import { SlideStackAnimation } from '../effects/text/animations/slidestack.js';
 
@@ -9,7 +10,8 @@ export const GeometryAnimations = {
 };
 
 export const ImageAnimations = {
-    'panzoom': PanZoomAnimation
+    'panzoom': PanZoomAnimation,
+    'fadein': FadeInAnimation
 };
 
 export const TextAnimations = {
@@ -27,7 +29,7 @@ export function getGeometryAnimation(type) {
 export function getImageAnimation(type) {
     const AnimationClass = ImageAnimations[type];
     if (!AnimationClass) {
-        throw new Error(`Unknown image animation type: ${type}`);
+        return FadeInAnimation;
     }
     return AnimationClass;
 }

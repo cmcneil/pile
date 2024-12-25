@@ -32,14 +32,14 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/scene/<scene_id>')
-def view_scene(scene_id):
-    """Serve the scene viewer with a specific scene"""
-    return render_template('index.html', scene_id=scene_id)
+# @app.route('/scene/<scene_id>')
+# def view_scene(scene_id):
+#     """Serve the scene viewer with a specific scene"""
+#     return render_template('index.html', scene_id=scene_id)
 
 @app.route('/')
 def serve_index():
-    """Serve the scene viewer with default scene"""
+    """Serve the landing page"""
     return render_template('index.html')
 
 # Config tool routes

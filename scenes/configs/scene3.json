@@ -1,56 +1,55 @@
 {
-    "id": "scene3",
-    "duration": 10,
-    "image": {
-      "path": "pile1.jpg",
-      "padding": 0.01,
-      "geometry": {
-        "type": "lineart",
-        "data": "pile1.json",
-        "animation": {
-          "type": "falling",
-          "config": {
-            "acceleration": 1.0,
-            "fallDuration": 1.0,
-            "fadeIn": {
-              "startTime": 3,
-              "duration": 5
-            },
-            "fadeOut": {
-              "startTime": 5,
-              "duration": 7
-            }
+  "id": "scene3",
+  "image": {
+    "path": "pile1.jpg",
+    "padding": 0.01,
+    "geometry": {
+      "type": "lineart",
+      "data": "scene3.json",
+      "animation": {
+        "type": "falling",
+        "config": {
+          "acceleration": 1,
+          "fallDuration": 1,
+          "fadeIn": {
+            "startTime": 3,
+            "duration": 5
+          },
+          "fadeOut": {
+            "startTime": 5,
+            "duration": 7
           }
         }
       }
-    },
-    "text": {
-      "verses": [
-        {
-          "id": 1,
-          "lines": [
-            "First line of the first verse slides in from left",
-            "Second line slides from the right side",
-            "Third line comes in from the left again"
-          ]
-        },
-        {
-          "id": 2,
-          "lines": [
-            "The second verse begins with this line",
-            "Following with another thoughtful line",
-            "And concluding with something meaningful"
-          ]
-        }
-      ],
-      "animation": {
-        "type": "slidestack",
-        "config": {
-          "slideDistance": 100,
-          "slideDuration": 0.5,
-          "pushDuration": 0.4,
-          "bottomPadding": 50
-        }
+    }
+  },
+  "text": {
+    "verses": [
+      {
+        "id": 1,
+        "lines": [
+          "First line of the first verse slides in from left",
+          "Second line slides from the right side",
+          "Third line comes in from the left again"
+        ]
+      },
+      {
+        "id": 2,
+        "lines": [
+          "The second verse begins with this line",
+          "Following with another thoughtful line",
+          "And concluding with something meaningful"
+        ]
+      }
+    ],
+    "animation": {
+      "type": "slidestack",
+      "config": {
+        "slideDistance": 100,
+        "slideDuration": 0.5,
+        "pushDuration": 0.4,
+        "bottomPadding": 50
       }
     }
   }
+}

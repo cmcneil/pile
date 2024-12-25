@@ -1,51 +1,161 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Visual Novel</title>
+    <title>Visual Novel Library</title>
     <style>
-        body { 
-            margin: 0; 
-            overflow: hidden; 
-            background: black; 
-        }
-        #text-overlay {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
+        body {
+            margin: 0;
+            padding: 20px;
             font-family: Arial, sans-serif;
-            font-size: 20px;
-            text-align: center;
-            max-width: 80%;
-            opacity: 0;
-            pointer-events: none;
+            background: #f0f0f0;
         }
-        #debug { 
-            position: fixed; 
-            top: 10px; 
-            left: 10px; 
-            color: white; 
-            font-family: monospace; 
-            z-index: 1000; 
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .tool-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tool-button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .tool-button:hover {
+            background: #0056b3;
+        }
+
+        .novel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .novel-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .novel-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .novel-thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #ddd;
+        }
+
+        .novel-info {
+            padding: 15px;
+        }
+
+        .novel-title {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+
+        .novel-stats {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .view-button {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-top: 10px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .view-button:hover {
+            background: #0056b3;
         }
     </style>
 </head>
 <body>
-    <div id="text-overlay"></div>
-    <div id="debug"></div>
+    <div class="header">
+        <h1>Visual Novel Library</h1>
+        <div class="tool-buttons">
+            <a href="/tools/scene-config.html" class="tool-button">Scene Config</a>
+            <a href="/tools/novel-config.html" class="tool-button">Novel Config</a>
+        </div>
+    </div>
 
-    <!-- External Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <div class="novel-grid" id="novelGrid">
+        <!-- Novels will be loaded here -->
+    </div>
 
-
-    <!-- Application Code -->
     <script>
-        window.SCENE_ID = "{{ scene_id or 'scene1' }}";
-    </script>
-    <script type="module" src="/core/index.js"></script>
+        async function loadNovels() {
+            try {
+                // Load novels
+                const novelsResponse = await fetch('/api/novels');
+                const novels = await novelsResponse.json();
 
+                const novelGrid = document.getElementById('novelGrid');
+                
+                // Process each novel
+                const novelCards = await Promise.all(novels.map(async novel => {
+                    // Get first scene to use as thumbnail
+                    const firstSceneId = novel.scenes[0];
+                    let thumbnailPath = '';
+                    
+                    if (firstSceneId) {
+                        try {
+                            const sceneResponse = await fetch(`/api/scenes/${firstSceneId}`);
+                            const sceneData = await sceneResponse.json();
+                            thumbnailPath = sceneData.image.path;
+                        } catch (error) {
+                            console.error('Error loading scene:', error);
+                        }
+                    }
+
+                    return `
+                        <div class="novel-card">
+                            <img class="novel-thumbnail" 
+                                 src="${thumbnailPath ? `/assets/images/${thumbnailPath}` : '#'}" 
+                                 alt="${novel.title}">
+                            <div class="novel-info">
+                                <h2 class="novel-title">${novel.title}</h2>
+                                <div class="novel-stats">
+                                    ${novel.scenes.length} scene${novel.scenes.length !== 1 ? 's' : ''}
+                                </div>
+                                <a href="/novel/${novel.id}" class="view-button">View Novel</a>
+                            </div>
+                        </div>
+                    `;
+                }));
+
+                novelGrid.innerHTML = novelCards.join('');
+            } catch (error) {
+                console.error('Error loading novels:', error);
+            }
+        }
+
+        // Load novels when the page loads
+        document.addEventListener('DOMContentLoaded', loadNovels);
+    </script>
 </body>
 </html>

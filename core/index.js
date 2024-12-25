@@ -1,4 +1,4 @@
-import { SceneManager } from '/core/scene.js';
+import { SceneManager } from '/core/scene-viewer.js';
 
 // Initialize PIXI
 const app = new PIXI.Application({

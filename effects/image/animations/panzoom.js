@@ -15,17 +15,22 @@ export class PanZoomAnimation {
         this.currentKeyframe = -1;
     }
 
-    createTimeline(container, imageScale, dimensions) {
+    isActive() {
+        // Return true if any timeline is still playing
+        return this.mainTL.isActive();
+    }
+
+    createTimeline(container, imageScale, dimensions, renderer) {
         const image = container.originalImage;
         image.alpha = 0;
-
+    
         const maxScale = Math.max(
-            window.innerWidth / dimensions.width,
-            window.innerHeight / dimensions.height
+            renderer.width / dimensions.width,
+            renderer.height / dimensions.height
         ) * 2;
-
+    
         const mainTL = gsap.timeline({ paused: true });
-
+    
         const animateToKeyframe = (index) => {
             console.log(`Animating to keyframe ${index}`);
             mainTL.clear();
@@ -40,46 +45,31 @@ export class PanZoomAnimation {
                 mainTL.play();
                 return;
             }
-
+    
             const view = this.config.keyframes[index].view;
-            console.log('Current view:', view);
             
-            console.log('Current image state:', {
-                x: image.position.x,
-                y: image.position.y,
-                scale: image.scale.x
-            });
-
+            // Calculate based on renderer dimensions
             const targetScale = Math.min(view.scale * imageScale, maxScale);
+            const targetX = renderer.width / 2 - 
+                          (view.x * dimensions.width - dimensions.width / 2) * targetScale;
+            const targetY = renderer.height / 2 - 
+                          (view.y * dimensions.height - dimensions.height / 2) * targetScale;
             
-            // Create a proxy object for the animation
-            const proxy = {
-                x: image.position.x,
-                y: image.position.y,
-                scale: image.scale.x
-            };
-
             if (index === 0) {
-                console.log('First keyframe - setting position');
                 image.scale.set(targetScale);
-                image.position.set(
-                    window.innerWidth / 2,
-                    window.innerHeight / 2
-                );
+                image.position.set(targetX, targetY);
                 mainTL.to(image, {
                     alpha: 1,
                     duration: this.config.fadeIn.duration,
                     ease: this.config.fadeIn.ease
                 });
             } else {
-                console.log('Animating to new position with scale:', targetScale);
-                
-                // Calculate position based on scale
-                const targetX = window.innerWidth / 2 - 
-                              (view.x * dimensions.width - dimensions.width / 2) * targetScale;
-                const targetY = window.innerHeight / 2 - 
-                              (view.y * dimensions.height - dimensions.height / 2) * targetScale;
-
+                const proxy = {
+                    x: image.position.x,
+                    y: image.position.y,
+                    scale: image.scale.x
+                };
+    
                 mainTL.to(proxy, {
                     x: targetX,
                     y: targetY,
@@ -87,22 +77,19 @@ export class PanZoomAnimation {
                     duration: view.duration,
                     ease: this.config.transitionEase,
                     onUpdate: () => {
-                        // Update PIXI object from proxy
                         image.position.set(proxy.x, proxy.y);
                         image.scale.set(proxy.scale);
-                        
-                        console.log('Animation progress -', {
-                            x: image.position.x,
-                            y: image.position.y,
-                            scale: proxy.scale
-                        });
                     }
                 });
             }
-
+    
             mainTL.play();
         };
-
+    
+        // Save references for complete method
+        this.mainTL = mainTL;
+        this.image = image;
+    
         return {
             timeline: mainTL,
             handleKeyPress: () => {
@@ -117,5 +104,31 @@ export class PanZoomAnimation {
                 }
             }
         };
+    }
+
+    async complete() {
+        // Skip to the end of all animations
+        return new Promise(resolve => {
+            // If we're still in the middle of keyframe animations
+            if (this.currentKeyframe < this.config.keyframes.length - 1) {
+                // Skip to final keyframe
+                this.currentKeyframe = this.config.keyframes.length - 1;
+                const finalKeyframe = this.config.keyframes[this.currentKeyframe];
+                
+                // Immediately set final position
+                this.mainTL.progress(1);
+                
+                // Start fadeout
+                this.mainTL.to(this.image, {
+                    alpha: 0,
+                    duration: this.config.fadeOut.duration,
+                    ease: this.config.fadeOut.ease,
+                    onComplete: resolve
+                });
+            } else {
+                // If we're already at the end, just resolve
+                resolve();
+            }
+        });
     }
 }
