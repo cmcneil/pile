@@ -17,6 +17,13 @@ export class SceneManager {
         app.stage.addChild(this.geometryContainer);
         app.stage.addChild(this.textContainer);
 
+        console.log('Stage hierarchy:', {
+            stageChildren: app.stage.children.length,
+            imageParent: this.imageContainer.parent === app.stage,
+            geometryParent: this.geometryContainer.parent === app.stage,
+            textParent: this.textContainer.parent === app.stage
+        });
+
         // Store bound event handler so we can remove it later
         this.boundKeyHandler = this.handleKeyDown.bind(this);
     }
@@ -166,7 +173,10 @@ export class SceneManager {
                 console.log('Creating text container');
                 const textContainer = this.textAnimation.createContainer(this.app);
                 console.log('Text container created:', textContainer);
+                console.log('Before adding to stage - textContainer parent:', textContainer.parent);
                 this.textContainer.addChild(textContainer);
+                console.log('After adding to stage - textContainer parent:', textContainer.parent);
+                console.log('Main text container children:', this.textContainer.children);
                 
                 if (config.text.verses && config.text.verses.length > 0) {
                     console.log('Setting verses:', config.text.verses);

@@ -1,3 +1,8 @@
+// import { AnimationSchemas } from '../animation-registry.js';
+
+import { ANIMATION_SCHEMAS } from '/schemas/index.js';
+
+let currentScene = null;
 let currentConfig = {
     verses: [],
     keyframes: []
@@ -81,6 +86,27 @@ function handleZoom(e) {
 
 
 // Scene List Management
+// async function loadSceneList() {
+//     try {
+//         const response = await fetch('/api/scenes');
+//         const scenes = await response.json();
+//         const container = document.getElementById('sceneListContainer');
+        
+//         container.innerHTML = scenes.map(scene => `
+//             <div class="scene-item" onclick="loadScene('${scene.id}')">
+//                 <img src="/assets/images/${scene.image}" 
+//                      class="scene-thumbnail" 
+//                      alt="${scene.id}">
+//                 <div>
+//                     <div>${scene.id}</div>
+//                 </div>
+//             </div>
+//         `).join('');
+//     } catch (error) {
+//         console.error('Error loading scenes:', error);
+//     }
+// }
+
 async function loadSceneList() {
     try {
         const response = await fetch('/api/scenes');
@@ -88,7 +114,7 @@ async function loadSceneList() {
         const container = document.getElementById('sceneListContainer');
         
         container.innerHTML = scenes.map(scene => `
-            <div class="scene-item" onclick="loadScene('${scene.id}')">
+            <div class="scene-item" data-scene-id="${scene.id}">
                 <img src="/assets/images/${scene.image}" 
                      class="scene-thumbnail" 
                      alt="${scene.id}">
@@ -97,6 +123,13 @@ async function loadSceneList() {
                 </div>
             </div>
         `).join('');
+
+        // Add event listeners after creating elements
+        container.querySelectorAll('.scene-item').forEach(item => {
+            item.addEventListener('click', () => {
+                loadScene(item.dataset.sceneId);
+            });
+        });
     } catch (error) {
         console.error('Error loading scenes:', error);
     }

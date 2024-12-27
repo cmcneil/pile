@@ -184,7 +184,15 @@
         </div>
     </div>
 
-    <script src="animation-schemas.js"></script>
-    <script src="scene-config.js"></script>
+    <script type="module">
+        import { ANIMATION_SCHEMAS } from '/schemas/index.js';
+        window.ANIMATION_SCHEMAS = ANIMATION_SCHEMAS;  // Make available to non-module scripts
+    </script>
+    <script type="module" src="scene-config.js"></script>
+    <!-- <script src="scene-config.js"></script> -->
+    <!-- <script type="module" src="animation-schemas.js"></script>
+    <script type="module" src="scene-config.js"></script> -->
+    <!-- <script src="animation-schemas.js"></script>
+    <script src="scene-config.js"></script> -->
 </body>
 </html>

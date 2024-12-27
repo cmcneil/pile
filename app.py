@@ -16,15 +16,31 @@ BASE_DIR = Path(__file__).parent
 ASSETS_DIR = BASE_DIR / 'assets'
 IMAGES_DIR = ASSETS_DIR / 'images'
 GEOMETRY_DIR = ASSETS_DIR / 'geometry'
-SCENES_DIR = BASE_DIR / 'scenes' / 'configs'
+# SCENES_DIR = BASE_DIR / 'scenes' / 'configs'
+# NOVELS_DIR = BASE_DIR / 'novels'
+
+
+# # Ensure directories exist
+# IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+# GEOMETRY_DIR.mkdir(parents=True, exist_ok=True)
+# SCENES_DIR.mkdir(parents=True, exist_ok=True)
+# NOVELS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Directory structure constants
+SCHEMAS_DIR = BASE_DIR / 'schemas'
+SCENES_DIR = BASE_DIR / 'scenes'
 NOVELS_DIR = BASE_DIR / 'novels'
 
+# Scene and novel configs
+SCENE_CONFIGS_DIR = SCENES_DIR / 'configs'
+NOVEL_CONFIGS_DIR = NOVELS_DIR / 'configs'
 
 # Ensure directories exist
-IMAGES_DIR.mkdir(parents=True, exist_ok=True)
-GEOMETRY_DIR.mkdir(parents=True, exist_ok=True)
+SCHEMAS_DIR.mkdir(parents=True, exist_ok=True)
 SCENES_DIR.mkdir(parents=True, exist_ok=True)
 NOVELS_DIR.mkdir(parents=True, exist_ok=True)
+SCENE_CONFIGS_DIR.mkdir(parents=True, exist_ok=True)
+NOVEL_CONFIGS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Configure allowed files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -60,18 +76,33 @@ def serve_core_files(filename):
 def serve_effects_files(filename):
     return send_from_directory('effects', filename)
 
-@app.route('/scenes/<path:filename>')
-def serve_scenes_files(filename):
-    return send_from_directory('scenes', filename)
+# @app.route('/scenes/<path:filename>')
+# def serve_scenes_files(filename):
+#     return send_from_directory('scenes', filename)
 
 @app.route('/assets/<path:filename>')
 def serve_assets(filename):
     return send_from_directory('assets', filename)
 
+@app.route('/schemas/<path:filename>')
+def serve_schemas(filename):
+    return send_from_directory('schemas', filename)
+
+@app.route('/scene/<scene_id>')
+def view_scene(scene_id):
+    """Serve the scene viewer with a specific scene"""
+    return render_template('viewer.html', content_type='scene', content_id=scene_id)
+
+@app.route('/novel/<novel_id>')
+def view_novel(novel_id):
+    """Serve the novel viewer with a specific novel"""
+    return render_template('viewer.html', content_type='novel', content_id=novel_id)
+
+
 @app.route('/api/scenes', methods=['GET'])
 def list_scenes():
     scenes = []
-    for config_file in SCENES_DIR.glob('*.json'):
+    for config_file in SCENE_CONFIGS_DIR.glob('*.json'):
         with open(config_file) as f:
             scene_data = json.load(f)
             scenes.append({
@@ -82,7 +113,7 @@ def list_scenes():
 
 @app.route('/api/scenes/<scene_id>', methods=['GET'])
 def get_scene(scene_id):
-    config_path = SCENES_DIR / f"{scene_id}.json"
+    config_path = SCENE_CONFIGS_DIR / f"{scene_id}.json"  # Use SCENE_CONFIGS_DIR instead
     if not config_path.exists():
         return jsonify({'error': 'Scene not found'}), 404
     
@@ -132,7 +163,7 @@ def save_scene():
             json.dump(geometry_data, f)
     
     # Save scene config
-    config_path = SCENES_DIR / f"{scene_id}.json"
+    config_path = SCENE_CONFIGS_DIR / f"{scene_id}.json"
     with open(config_path, 'w') as f:
         json.dump(scene_data, f, indent=2)
     
@@ -191,10 +222,10 @@ def get_geometry_types():
     })
 
 ### Novel Code:
-@app.route('/novel/<novel_id>')
-def view_novel(novel_id):
-    """Serve the novel viewer with a specific novel"""
-    return render_template('novel.html', novel_id=novel_id)
+# @app.route('/novel/<novel_id>')
+# def view_novel(novel_id):
+#     """Serve the novel viewer with a specific novel"""
+#     return render_template('novel.html', novel_id=novel_id)
 
 @app.route('/api/novels', methods=['GET'])
 def list_novels():

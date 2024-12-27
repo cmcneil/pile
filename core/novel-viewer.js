@@ -1,19 +1,13 @@
 import { SceneManager } from './scene-viewer.js';
 
-class NovelViewer {
-    constructor(novelId) {
+export class NovelViewer {
+    constructor(novelId, app) {
         console.log('Initializing NovelViewer with novel:', novelId);
         this.novelId = novelId;
         this.novel = null;
         this.currentSceneIndex = -1;
         this.currentScene = null;
-        this.app = new PIXI.Application({
-            width: window.innerWidth,
-            height: window.innerHeight,
-            backgroundColor: 0x000000,
-            resolution: window.devicePixelRatio || 1,
-        });
-        document.body.appendChild(this.app.view);
+        this.app = app;
         
         this.sceneManager = new SceneManager(this.app);
         this.isTransitioning = false;
@@ -133,7 +127,7 @@ class NovelViewer {
 
 // Initialize when the page loads
 console.log('Novel viewer script loaded');
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing novel viewer with ID:', window.NOVEL_ID);
-    window.novelViewer = new NovelViewer(window.NOVEL_ID);
-});
+// window.addEventListener('DOMContentLoaded', () => {
+//     console.log('DOM loaded, initializing novel viewer with ID:', window.NOVEL_ID);
+//     window.novelViewer = new NovelViewer(window.NOVEL_ID);
+// });

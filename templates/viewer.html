@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visual Novel Viewer</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: black; 
+        }
+        
+        #text-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            color: white;
+            z-index: 100;
+        }
+
+        #home-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            text-decoration: none;
+            font-family: Arial, sans-serif;
+            transition: background 0.2s;
+            display: none; /* Hidden by default, shown for scene view */
+        }
+
+        #home-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        #debug {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: monospace;
+            z-index: 1000;
+        }
+
+        #text-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            color: white;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .text-verse {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin: 5px 0;
+            max-width: 80%;  /* Prevent text from stretching too wide */
+            text-align: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
+    <script>
+        // Pass content info from Flask
+        window.CONTENT_TYPE = "{{ content_type }}";  // 'scene' or 'novel'
+        window.CONTENT_ID = "{{ content_id }}";
+    </script>
+</head>
+<body>
+    <div id="text-overlay"></div>
+    <div id="debug"></div>
+    <a href="/" id="home-button">Back to Home</a>
+    
+    <script type="module" src="/core/viewer.js"></script>
+</body>
+</html>
