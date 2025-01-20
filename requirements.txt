@@ -1,4 +1,0 @@
-controlnet-aux
-Flask
-opencv-python
-numpy

@@ -8,7 +8,17 @@ This project is a web-based visual novel viewer. It is sort of like a slide-show
 You can configure "scenes", which are both an image and a set of verses of text. A "novel" is composed of a series of scenes.
 
 The engine is named after "Pile: Petals from St. Klaed's Computer", the epic poem it was built to display.
+## Installation
 
+1. Ensure you have Python 3.12 or higher installed
+2. Clone this repository
+3. Install dependencies using uv:
+
+```
+uv venv
+source .venv/bin/activate
+uv sync
+```
 
 ## Launch Engine
 `python app.py` 
