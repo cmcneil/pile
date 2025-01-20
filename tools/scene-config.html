@@ -123,7 +123,7 @@
 <body>
     <div class="scene-list">
         <h2>Scenes</h2>
-        <button onclick="createNewScene()">New Scene</button>
+        <button id="newSceneButton">New Scene</button>
         <div id="sceneListContainer"></div>
     </div>
 
@@ -138,7 +138,7 @@
 
             <div class="form-group">
                 <label>Animation Type:</label>
-                <select id="animationType" onchange="updateAnimationUI()">
+                <select id="animationType">
                     <option value="">Select Type...</option>
                     <optgroup label="Image Animations">
                     </optgroup>
@@ -148,9 +148,8 @@
             </div>
 
             <div id="animationConfig" class="animation-config">
-                <!-- In the preview-panel section -->
                 <div id="keyframeControls">
-                    <button onclick="captureKeyframe()">Capture Current View</button>
+                    <button id="captureKeyframeButton">Capture Current View</button>
                     <div id="keyframeList"></div>
                 </div>
             </div>
@@ -163,11 +162,11 @@
 
             <div class="verses-section">
                 <h3>Verses</h3>
-                <button onclick="addVerse()">Add Verse</button>
+                <button id="addVerseButton">Add Verse</button>
                 <div id="verseList"></div>
             </div>
 
-            <button onclick="saveScene()">Save Scene</button>
+            <button id="saveSceneButton">Save Scene</button>
         </div>
 
         <div class="preview-panel">
@@ -176,23 +175,21 @@
                     <img id="previewImage">
                 </div>
                 <div class="zoom-controls">
-                    <button onclick="zoomIn()">+</button>
-                    <button onclick="zoomOut()">-</button>
+                    <button id="zoomInButton">+</button>
+                    <button id="zoomOutButton">-</button>
                 </div>
             </div>
-            
         </div>
     </div>
 
     <script type="module">
         import { ANIMATION_SCHEMAS } from '/schemas/index.js';
-        window.ANIMATION_SCHEMAS = ANIMATION_SCHEMAS;  // Make available to non-module scripts
+        import { initializeSceneConfig } from './scene-config.js';
+        
+        // Initialize after DOM content is loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeSceneConfig(ANIMATION_SCHEMAS);
+        });
     </script>
-    <script type="module" src="scene-config.js"></script>
-    <!-- <script src="scene-config.js"></script> -->
-    <!-- <script type="module" src="animation-schemas.js"></script>
-    <script type="module" src="scene-config.js"></script> -->
-    <!-- <script src="animation-schemas.js"></script>
-    <script src="scene-config.js"></script> -->
 </body>
 </html>

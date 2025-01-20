@@ -127,6 +127,14 @@ export class SceneManager {
             this.imageContainer.addChild(image);
             this.imageContainer.originalImage = image;
 
+            console.log('Image added to container:', {
+                imageAlpha: image.alpha,
+                imagePosition: image.position,
+                imageScale: image.scale,
+                containerChildren: this.imageContainer.children.length
+            });
+
+
             // Handle image animation setup
             const AnimationClass = getImageAnimation(config.image.animation?.type);
             const animation = new AnimationClass(config.image.animation?.config || {});
@@ -137,6 +145,10 @@ export class SceneManager {
                 { width: texture.width, height: texture.height },
                 this.app.renderer
             );
+            console.log('Image animation created:', {
+                hasTimeline: !!this.imageAnimation?.timeline,
+                imageStillInContainer: this.imageContainer.children.includes(image)
+            });
             
             // If there's geometry, set it up
             if (config.image.geometry) {
@@ -155,8 +167,8 @@ export class SceneManager {
                     duration: config.duration
                 });
                 
-                this.imageAnimation = geometryAnimation.createTimeline(
-                    this.imageContainer,
+                this.geometryAnimation = geometryAnimation.createTimeline(
+                    this.geometryContainer,
                     imageScale,
                     { width: texture.width, height: texture.height },
                     this.app.renderer

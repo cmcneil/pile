@@ -16,11 +16,28 @@ let startX = 0;
 let startY = 0;
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+// document.addEventListener('DOMContentLoaded', () => {
+//     setupImageDragAndZoom();
+//     populateAnimationTypes();
+//     loadSceneList();
+// });
+
+export function initializeSceneConfig(ANIMATION_SCHEMAS) {
+    // Set up event listeners
+    document.getElementById('animationType').addEventListener('change', updateAnimationUI);
+    document.getElementById('newSceneButton').addEventListener('click', createNewScene);
+    document.getElementById('saveSceneButton').addEventListener('click', saveScene);
+    document.getElementById('zoomInButton').addEventListener('click', zoomIn);
+    document.getElementById('zoomOutButton').addEventListener('click', zoomOut);
+    document.getElementById('captureKeyframeButton')?.addEventListener('click', captureKeyframe);
+    document.getElementById('addVerseButton')?.addEventListener('click', addVerse);
+
+    
+    // Initialize components
     setupImageDragAndZoom();
-    populateAnimationTypes();
+    populateAnimationTypes(ANIMATION_SCHEMAS);
     loadSceneList();
-});
+}
 
 function setupImageDragAndZoom() {
     const container = document.querySelector('.preview-container');
@@ -205,8 +222,10 @@ function populateAnimationTypes() {
     });
 }
 
+
 function updateAnimationUI() {
-    const [type, name] = document.getElementById('animationType').value.split('-');
+    const animationType = document.getElementById('animationType').value;
+    const [type, name] = animationType.split('-');
     const schema = ANIMATION_SCHEMAS[type]?.[name];
     const configContainer = document.getElementById('animationConfig');
     
@@ -214,33 +233,40 @@ function updateAnimationUI() {
     
     if (!schema) {
         configContainer.innerHTML = '';
-        console.log('No schema found, cleared config container');
         return;
     }
     
     const configHtml = generateConfigUI(schema.config);
-    console.log('Generated config HTML:', configHtml);
     configContainer.innerHTML = configHtml;
     
-    // If loading existing config, update the UI with saved values
-    if (currentScene && currentScene.image) {
-        const config = type === 'image' ? 
-            currentScene.image.animation?.config :
-            currentScene.image.geometry?.animation?.config;
-        
-        console.log('Current scene config:', config);
-            
-        if (config) {
-            updateConfigUI(config);
-        }
-        
-        // Update keyframes if they exist
-        if (config?.keyframes) {
-            console.log('Found keyframes:', config.keyframes);
-            currentConfig.keyframes = config.keyframes;
-            updateKeyframeList();
-        }
-    }
+    // Re-attach event listeners for any newly created elements
+    setupConfigEventListeners();
+}
+
+function setupConfigEventListeners() {
+    // Keyframe related listeners
+    document.querySelectorAll('.keyframe-item button').forEach((button, index) => {
+        button.addEventListener('click', () => removeKeyframe(index));
+    });
+
+    document.querySelectorAll('.keyframe-item input').forEach((input, index) => {
+        input.addEventListener('change', (e) => updateKeyframeDuration(index, e.target.value));
+    });
+
+    // Verse related listeners
+    document.querySelectorAll('.verse-container textarea').forEach((textarea, verseIndex) => {
+        textarea.addEventListener('change', (e) => updateVerseText(verseIndex, e.target.value));
+    });
+
+    document.querySelectorAll('.verse-container button').forEach((button, verseIndex) => {
+        button.addEventListener('click', () => removeVerse(verseIndex));
+    });
+
+    // Animation config inputs
+    document.querySelectorAll('#animationConfig input, #animationConfig select').forEach(element => {
+        const id = element.id;
+        element.addEventListener('change', (e) => updateConfig(id, e.target.value));
+    });
 }
 
 // Add this helper function to update UI with saved values
@@ -407,6 +433,8 @@ function updateVerseList() {
             <button onclick="removeVerse(${verseIndex})">Remove Verse</button>
         </div>
     `).join('');
+
+    setupConfigEventListeners();
 }
 
 function updateVerseText(verseIndex, text) {
@@ -464,6 +492,8 @@ function updateKeyframeList() {
             <button onclick="removeKeyframe(${index})">Remove</button>
         </div>
     `).join('');
+
+    setupConfigEventListeners();
 }
 
 function updateKeyframeDuration(index, duration) {

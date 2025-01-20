@@ -32,58 +32,81 @@ export class FallingAnimation {
 
     createTimeline(container, imageScale, dimensions) {
         let currentPhase = 0;
-
+    
         const tl = gsap.timeline({
             paused: true,
             onComplete: () => {
                 container.removeChild(container.originalImage);
             }
         });
+        
         const totalSegments = this.geometry.getTotalSegments();
         const FALL_OFFSET = -window.innerHeight;
-
-        let segmentCount = 0;
-        const segmentContainers = [];
+    
+        // Center container
+        container.position.set(
+            window.innerWidth / 2,
+            window.innerHeight / 2
+        );
+    
+        // Calculate container dimensions based on image scale
+        const containerWidth = dimensions.width * imageScale;
+        const containerHeight = dimensions.height * imageScale;
         
-        // Process each segment
+        // Group segments by level
+        const segmentsByLevel = new Map();
         for (let i = 0; i < totalSegments; i++) {
             const { segment, level } = this.geometry.getSegmentAt(i);
+            if (!segmentsByLevel.has(level)) {
+                segmentsByLevel.set(level, []);
+            }
+            segmentsByLevel.get(level).push(segment);
+        }
+        
+        // Process segments level by level
+        let levelDelay = 0;
+        for (const [level, segments] of segmentsByLevel) {
+            const levelContainer = new PIXI.Container();
+            container.addChild(levelContainer);
             
-            const segmentContainer = new PIXI.Container();
-            container.addChild(segmentContainer);
+            // Process segments within this level
+            segments.forEach((segment, segmentIndex) => {
+                const graphics = new PIXI.Graphics();
+                graphics.lineStyle(1, 0xFFFFFF);
+                
+                // Normalize coordinates to -0.5 to 0.5 range (centered)
+                const startX = (segment.start.x / dimensions.width - 0.5) * containerWidth;
+                const startY = (segment.start.y / dimensions.height - 0.5) * containerHeight;
+                const endX = (segment.end.x / dimensions.width - 0.5) * containerWidth;
+                const endY = (segment.end.y / dimensions.height - 0.5) * containerHeight;
+                
+                graphics.moveTo(startX, startY);
+                graphics.lineTo(endX, endY);
+                
+                levelContainer.addChild(graphics);
+            });
             
-            const graphics = new PIXI.Graphics();
-            graphics.lineStyle(1, 0xFFFFFF);
+            // Set initial position for level container
+            levelContainer.y = FALL_OFFSET;
+            levelContainer.alpha = 0;
             
-            const startX = (segment.start.x - dimensions.width/2) * imageScale;
-            const startY = (segment.start.y - dimensions.height/2) * imageScale;
-            const endX = (segment.end.x - dimensions.width/2) * imageScale;
-            const endY = (segment.end.y - dimensions.height/2) * imageScale;
+            // Calculate timing for this level
+            const segmentDelay = levelDelay;
+            levelDelay += this.config.fallDuration * 0.5; // Overlap levels slightly
             
-            graphics.moveTo(startX, startY);
-            graphics.lineTo(endX, endY);
-            
-            segmentContainer.addChild(graphics);
-            segmentContainer.y = FALL_OFFSET;
-            segmentContainer.alpha = 0;
-
-            segmentContainers.push(segmentContainer);
-
-            const segmentDelay = this.getSegmentTiming(segmentCount, totalSegments);
-            segmentCount++;
-            
-            tl.to(segmentContainer, {
+            // Animate the entire level
+            tl.to(levelContainer, {
                 alpha: 1,
                 duration: 0.1
             }, segmentDelay);
             
-            tl.to(segmentContainer, {
+            tl.to(levelContainer, {
                 y: 0,
                 duration: this.config.fallDuration,
                 ease: "power2.out"
             }, segmentDelay);
         }
-
+    
         // Add fades
         const { fadeIn, fadeOut } = this.config;
         
@@ -94,7 +117,7 @@ export class FallingAnimation {
                 ease: "power1.inOut"
             }, fadeIn.startTime);
         }
-
+    
         if (fadeOut) {
             tl.to(container, {
                 alpha: 0,
@@ -102,34 +125,21 @@ export class FallingAnimation {
                 ease: "power1.inOut"
             }, fadeOut.startTime);
         }
-
+    
         tl.addPause();
-
-        tl.to(container.originalImage, {
-            alpha: 0,
-            duration: 1,
-            ease: "power2.inOut",
-            onComplete: () => {
-                this.cleanup(container, segmentContainers, tl);
-            }
-        });
-
-        // Handle user key presses
-        const handleKeyPress = () => {
-            if (currentPhase === 0) {
-                tl.play();
-                currentPhase++;
-            } else if (currentPhase >= 1) {
-                tl.resume();
-                currentPhase++;
-            }
-        };
-
+    
         return {
             timeline: tl,
-
-            handleKeyPress
-        }
+            handleKeyPress: () => {
+                if (currentPhase === 0) {
+                    tl.play();
+                    currentPhase++;
+                } else if (currentPhase >= 1) {
+                    tl.resume();
+                    currentPhase++;
+                }
+            }
+        };
     }
 
     async complete() {

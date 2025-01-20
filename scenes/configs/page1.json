@@ -1,0 +1,69 @@
+{
+  "id": "page1",
+  "image": {
+    "path": "page1.png",
+    "padding": 0.01,
+    "animation": {
+      "type": "fadein",
+      "config": {
+        "duration": 1.5,
+        "ease": "power2.inOut"
+      }
+    }
+  },
+  "text": {
+    "verses": [
+      {
+        "id": 1,
+        "lines": [
+          "Undecaying, undecayed.",
+          "Behold! -- Pile is displayed.",
+          "All one enormous folly,",
+          "Chiselled out in fine brocade",
+          "Of stone, brick, mortar. Planned",
+          "For splendour, huge, unjolly,",
+          "Pile got out of hand."
+        ]
+      },
+      {
+        "id": 2,
+        "lines": [
+          "Many merchants, solemn, skilled,",
+          "Worked, but scale and size",
+          "Began to metagrobolise",
+          "Even its founder-build-",
+          "Ers; its complexity conquers land and sea,",
+          "Its marble mortuary conscientiously"
+        ]
+      },
+      {
+        "id": 3,
+        "lines": [
+          "Overturns geography, outlasts geology,",
+          "Outblasts psychology --"
+        ]
+      },
+      {
+        "id": 4,
+        "lines": [
+          "And",
+          "Makes labyrinthine home",
+          "For a select band",
+          "Of men -- if you can say home",
+          "And not call it an",
+          "Agate, metropolitan,",
+          "Metronome."
+        ]
+      }
+    ],
+    "animation": {
+      "type": "slidestack",
+      "config": {
+        "slideDistance": 100,
+        "slideDuration": 0.5,
+        "pushDuration": 0.4,
+        "bottomPadding": 50
+      }
+    }
+  }
+}
