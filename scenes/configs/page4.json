@@ -1,0 +1,64 @@
+{
+  "id": "page4",
+  "image": {
+    "path": "page4.png",
+    "padding": 0.01,
+    "animation": {
+      "type": "fadein",
+      "config": {
+        "duration": 1.5,
+        "ease": "power2.inOut"
+      }
+    }
+  },
+  "text": {
+    "verses": [
+      {
+        "id": 1,
+        "lines": [
+          "Dreamers whose gaudy dreams miscarried,",
+          "Schemers whose tawdry lands were harried,",
+          "Men who remained for life unmarried,",
+          "Moralists meek (with some rather scary ones), police",
+          "  officers, fiddlers, philosophers sly,",
+          "Octogenarians, grey vegetarians, astronomers with a",
+          "  cast in one eye,",
+          "Antiquarians, bald ones and hairy ones, scientists,",
+          "  prelates, and medics of note,",
+          "Mathematicians and monks with positions, physicians,",
+          "  and fellows and learners by rote,",
+          "Alchemists who turned their coat,",
+          "Architects that valued style high,",
+          "Masons mounting stone a mile high,",
+          "All these helped to build the Pile high,"
+        ]
+      },
+      {
+        "id": 2,
+        "lines": [
+          "Helped it bloat,",
+          "Helped take Heaven by the throat."
+        ]
+      },
+      {
+        "id": 3,
+        "lines": [
+          "Cold elegance,",
+          "Intolerance,",
+          "Circumastance,",
+          "All that was made",
+          "Encouraged parade."
+        ]
+      }
+    ],
+    "animation": {
+      "type": "slidestack",
+      "config": {
+        "slideDistance": 100,
+        "slideDuration": 0.5,
+        "pushDuration": 0.4,
+        "bottomPadding": 50
+      }
+    }
+  }
+}

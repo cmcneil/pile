@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadAvailableScenes();
 });
 
+// Update the loadNovelList function in novel-config.js
 async function loadNovelList() {
     try {
         const response = await fetch('/api/novels');
@@ -14,11 +15,28 @@ async function loadNovelList() {
         const container = document.getElementById('novelListContainer');
         
         container.innerHTML = novels.map(novel => `
-            <div class="novel-item" onclick="loadNovel('${novel.id}')">
-                <div>${novel.title}</div>
-                <div><small>${novel.scenes.length} scenes</small></div>
+            <div class="novel-item" data-novel-id="${novel.id}">
+                <div class="novel-item-content">
+                    <div>${novel.title}</div>
+                    <div><small>${novel.scenes.length} scenes</small></div>
+                    <button class="delete-button" onclick="event.stopPropagation();">Delete</button>
+                </div>
             </div>
         `).join('');
+
+        // Add event listeners
+        container.querySelectorAll('.novel-item').forEach(item => {
+            item.addEventListener('click', () => {
+                loadNovel(item.dataset.novelId);
+            });
+            
+            // Add delete button listener
+            const deleteBtn = item.querySelector('.delete-button');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();  // Prevent novel loading
+                deleteNovel(item.dataset.novelId);
+            });
+        });
     } catch (error) {
         console.error('Error loading novels:', error);
     }
@@ -52,6 +70,35 @@ async function loadAvailableScenes() {
         `).join('');
     } catch (error) {
         console.error('Error loading scenes:', error);
+    }
+}
+
+// Add this function to novel-config.js
+async function deleteNovel(novelId) {
+    if (!confirm(`Are you sure you want to delete novel "${novelId}"?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/novels/${novelId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            loadNovelList();  // Refresh the list
+            
+            // If the deleted novel was the current novel, clear the form
+            if (currentNovel && currentNovel.id === novelId) {
+                createNewNovel();
+            }
+            
+            alert('Novel deleted successfully!');
+        } else {
+            alert('Error deleting novel');
+        }
+    } catch (error) {
+        console.error('Error deleting novel:', error);
+        alert('Error deleting novel');
     }
 }
 

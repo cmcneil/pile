@@ -37,16 +37,64 @@ export function initializeSceneConfig(ANIMATION_SCHEMAS) {
     setupImageDragAndZoom();
     populateAnimationTypes(ANIMATION_SCHEMAS);
     loadSceneList();
+    setupPreview();
+}
+
+function updateCoordinateDisplay() {
+    const wrapper = document.querySelector('.image-wrapper');
+    const container = wrapper.parentElement;
+    const referenceScale = parseFloat(container.dataset.referenceScale);
+    
+    // Now scale is relative to the container-filling size
+    const normalizedScale = currentScale / referenceScale;
+    
+    const containerRect = container.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    
+    const containerCenterX = containerRect.left + containerRect.width / 2;
+    const containerCenterY = containerRect.top + containerRect.height / 2;
+    const imageCenterX = wrapperRect.left + wrapperRect.width / 2;
+    const imageCenterY = wrapperRect.top + wrapperRect.height / 2;
+    
+    // Position calculations remain the same
+    const normalizedX = (containerCenterX - imageCenterX) / (wrapperRect.width * normalizedScale);
+    const normalizedY = (containerCenterY - imageCenterY) / (wrapperRect.height * normalizedScale);
+    
+    const display = document.getElementById('coordinateDisplay');
+    if (display) {
+        display.textContent = `Position: (${normalizedX.toFixed(3)}, ${normalizedY.toFixed(3)}) Scale: ${normalizedScale.toFixed(3)}`;
+    }
 }
 
 function setupImageDragAndZoom() {
     const container = document.querySelector('.preview-container');
     const wrapper = document.querySelector('.image-wrapper');
 
+    // Remove existing listeners first to prevent duplicates
+    wrapper.removeEventListener('mousedown', startDrag);
+    document.removeEventListener('mousemove', drag);
+    document.removeEventListener('mouseup', endDrag);
+    container.removeEventListener('wheel', handleZoom);
+
+    // Add listeners
     wrapper.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', endDrag);
     container.addEventListener('wheel', handleZoom);
+
+    // Make sure zoom buttons work
+    const zoomInButton = document.getElementById('zoomInButton');
+    const zoomOutButton = document.getElementById('zoomOutButton');
+    
+    if (zoomInButton) {
+        zoomInButton.removeEventListener('click', zoomIn);
+        zoomInButton.addEventListener('click', zoomIn);
+    }
+    
+    if (zoomOutButton) {
+        zoomOutButton.removeEventListener('click', zoomOut);
+        zoomOutButton.addEventListener('click', zoomOut);
+    }
 }
 
 function startDrag(e) {
@@ -66,6 +114,7 @@ function drag(e) {
     currentY = e.clientY - startY;
     
     updateImageTransform();
+    updateCoordinateDisplay(); 
 }
 
 function endDrag(e) {
@@ -77,16 +126,23 @@ function endDrag(e) {
 
 function updateImageTransform() {
     const wrapper = document.querySelector('.image-wrapper');
+    if (!wrapper) return;
+
     wrapper.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentScale})`;
+    updateCoordinateDisplay();
 }
 
 function zoomIn() {
-    currentScale = Math.min(5, currentScale * 1.2);
+    const container = document.querySelector('.preview-container');
+    const referenceScale = parseFloat(container.dataset.referenceScale);
+    currentScale = currentScale * 1.2;  // Increase by 20%
     updateImageTransform();
 }
 
 function zoomOut() {
-    currentScale = Math.max(0.1, currentScale / 1.2);
+    const container = document.querySelector('.preview-container');
+    const referenceScale = parseFloat(container.dataset.referenceScale);
+    currentScale = currentScale / 1.2;  // Decrease by 20%
     updateImageTransform();
 }
 
@@ -97,6 +153,59 @@ function handleZoom(e) {
     } else {
         zoomOut();
     }
+    updateCoordinateDisplay();
+}
+
+function setupPreview() {
+    const container = document.querySelector('.preview-container');
+    
+    // Remove any existing indicator first
+    const existingIndicator = document.querySelector('.center-indicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+    
+    // Add center indicator
+    const indicator = document.createElement('div');
+    indicator.className = 'center-indicator';
+    container.appendChild(indicator);  // Attach to container
+    
+    // Set up image load handling
+    const previewImage = document.getElementById('previewImage');
+    if (previewImage) {
+        previewImage.onload = function() {
+            fitImageToContainer(this);
+            setupImageDragAndZoom();
+        };
+    }
+}
+
+function fitImageToContainer(image) {
+    const container = document.querySelector('.preview-container');
+    const containerRect = container.getBoundingClientRect();
+    
+    // Calculate reference scale
+    const referenceScale = Math.min(
+        containerRect.width / image.naturalWidth,
+        containerRect.height / image.naturalHeight
+    );
+    
+    // Store this as our reference
+    container.dataset.referenceScale = referenceScale;
+    
+    // Set scale based on animation type
+    const [animationType, animationName] = document.getElementById('animationType').value.split('-');
+    if (animationType === 'image' && animationName === 'panzoom' && currentConfig.keyframes?.length > 0) {
+        // For panzoom with keyframes, use current scale
+        currentScale = currentScale || referenceScale;
+    } else {
+        // For all other cases, force scale to reference (1.0 normalized)
+        currentScale = referenceScale;
+        currentX = 0;
+        currentY = 0;
+    }
+    
+    updateImageTransform();
 }
 
 
@@ -135,16 +244,24 @@ async function loadSceneList() {
                 <img src="/assets/images/${scene.image}" 
                      class="scene-thumbnail" 
                      alt="${scene.id}">
-                <div>
+                <div class="scene-item-content">
                     <div>${scene.id}</div>
+                    <button class="delete-button" onclick="event.stopPropagation();">Delete</button>
                 </div>
             </div>
         `).join('');
 
-        // Add event listeners after creating elements
+        // Add event listeners
         container.querySelectorAll('.scene-item').forEach(item => {
             item.addEventListener('click', () => {
                 loadScene(item.dataset.sceneId);
+            });
+            
+            // Add delete button listener
+            const deleteBtn = item.querySelector('.delete-button');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();  // Prevent scene loading
+                deleteScene(item.dataset.sceneId);
             });
         });
     } catch (error) {
@@ -158,44 +275,96 @@ async function loadScene(sceneId) {
         currentScene = await response.json();
         console.log('Loaded scene:', currentScene);
         
-        // Update form with scene data
-        document.getElementById('sceneId').value = currentScene.id;
+        // Reset config first
+        currentConfig = {
+            verses: [],
+            keyframes: []
+        };
         
-        // Load image
-        const previewImage = document.getElementById('previewImage');
-        if (currentScene.image && currentScene.image.path) {
-            previewImage.src = `/assets/images/${currentScene.image.path}`;
-            document.getElementById('currentImage').textContent = currentScene.image.path;
-        }
-        
-        // Set animation type and update UI
+        // Set animation type
         let animationType = 'image';
         let animationName = '';
         
         if (currentScene.image.animation) {
             animationName = currentScene.image.animation.type;
             console.log('Found image animation:', animationName);
-            if (animationName === 'panzoom') {
-                currentConfig.keyframes = currentScene.image.animation.config.keyframes || [];
-                console.log('Loaded keyframes:', currentConfig.keyframes);
+            
+            // Load animation config
+            if (currentScene.image.animation.config) {
+                if (animationName === 'panzoom' && currentScene.image.animation.config.keyframes) {
+                    currentConfig.keyframes = JSON.parse(JSON.stringify(currentScene.image.animation.config.keyframes));
+                    console.log('Loaded keyframes:', currentConfig.keyframes);
+                }
             }
         } else if (currentScene.image.geometry) {
             animationType = 'geometry';
             animationName = currentScene.image.geometry.animation.type;
-            console.log('Found geometry animation:', animationName);
         }
         
+        // Update UI form fields
+        document.getElementById('sceneId').value = currentScene.id;
+        
+        // Set animation type in UI
         const animationSelect = document.getElementById('animationType');
         const animationValue = `${animationType}-${animationName}`;
         console.log('Setting animation type to:', animationValue);
         animationSelect.value = animationValue;
+        
+        // Update animation UI first - this creates necessary DOM elements
         updateAnimationUI();
         
+        // Now safe to update lists
+        updateKeyframeList();
+        
+        // Reset position and scale for non-panzoom animations
+        if (!(animationType === 'image' && animationName === 'panzoom' && currentConfig.keyframes?.length > 0)) {
+            currentScale = 1.0;
+            currentX = 0;
+            currentY = 0;
+        }
+        
         // Load verses
-        currentConfig.verses = currentScene.text.verses || [];
+        currentConfig.verses = currentScene.text?.verses || [];
         updateVerseList();
+        
+        // Load image last, after all UI is set up
+        if (currentScene.image && currentScene.image.path) {
+            const previewImage = document.getElementById('previewImage');
+            previewImage.src = `/assets/images/${currentScene.image.path}`;
+            document.getElementById('currentImage').textContent = currentScene.image.path;
+        }
+        
     } catch (error) {
         console.error('Error loading scene:', error);
+    }
+}
+
+// Add this function to scene-config.js
+async function deleteScene(sceneId) {
+    if (!confirm(`Are you sure you want to delete scene "${sceneId}"?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/scenes/${sceneId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            loadSceneList();  // Refresh the list
+            
+            // If the deleted scene was the current scene, clear the form
+            if (currentScene && currentScene.id === sceneId) {
+                createNewScene();
+            }
+            
+            alert('Scene deleted successfully!');
+        } else {
+            alert('Error deleting scene');
+        }
+    } catch (error) {
+        console.error('Error deleting scene:', error);
+        alert('Error deleting scene');
     }
 }
 
@@ -224,12 +393,9 @@ function populateAnimationTypes() {
 
 
 function updateAnimationUI() {
-    const animationType = document.getElementById('animationType').value;
-    const [type, name] = animationType.split('-');
+    const [type, name] = document.getElementById('animationType').value.split('-');
     const schema = ANIMATION_SCHEMAS[type]?.[name];
     const configContainer = document.getElementById('animationConfig');
-    
-    console.log('Updating animation UI:', { type, name, schema });
     
     if (!schema) {
         configContainer.innerHTML = '';
@@ -239,8 +405,20 @@ function updateAnimationUI() {
     const configHtml = generateConfigUI(schema.config);
     configContainer.innerHTML = configHtml;
     
-    // Re-attach event listeners for any newly created elements
+    // After generating new HTML, reattach event listeners
     setupConfigEventListeners();
+    
+    // Specifically handle the capture keyframe button which is dynamically created
+    const captureButton = document.getElementById('captureKeyframeButton');
+    if (captureButton) {
+        captureButton.addEventListener('click', captureKeyframe);
+    }
+    
+    // If this is a panzoom animation, show keyframe controls
+    const keyframeControls = document.getElementById('keyframeControls');
+    if (keyframeControls && type === 'image' && name === 'panzoom') {
+        keyframeControls.style.display = 'block';
+    }
 }
 
 function setupConfigEventListeners() {
@@ -311,7 +489,7 @@ function generateConfigUI(schema, prefix = '') {
             return `
                 <div class="keyframe-section">
                     <h4>Keyframes</h4>
-                    <button onclick="captureKeyframe()">Capture Current View</button>
+                    <button id="captureKeyframeButton">Capture Current View</button>
                     <div id="keyframeList"></div>
                 </div>
             `;
@@ -423,22 +601,28 @@ function addVerse() {
 function updateVerseList() {
     const verseList = document.getElementById('verseList');
     verseList.innerHTML = currentConfig.verses.map((verse, verseIndex) => `
-        <div class="verse-container">
+        <div class="verse-container" data-verse-index="${verseIndex}">
             <h4>Verse ${verse.id}</h4>
             <textarea
+                class="verse-text"
                 rows="6"
                 style="width: 100%; margin-bottom: 10px;"
-                onchange="updateVerseText(${verseIndex}, this.value)"
             >${verse.lines.join('\n')}</textarea>
-            <button onclick="removeVerse(${verseIndex})">Remove Verse</button>
+            <button class="remove-verse-button">Remove Verse</button>
         </div>
     `).join('');
 
-    setupConfigEventListeners();
+    // Attach event listeners
+    verseList.querySelectorAll('.verse-text').forEach((textarea, index) => {
+        textarea.addEventListener('change', (e) => updateVerseText(index, e.target.value));
+    });
+
+    verseList.querySelectorAll('.remove-verse-button').forEach((button, index) => {
+        button.addEventListener('click', () => removeVerse(index));
+    });
 }
 
 function updateVerseText(verseIndex, text) {
-    // Split text on newlines and filter out empty lines
     const lines = text.split('\n').filter(line => line.trim() !== '');
     currentConfig.verses[verseIndex].lines = lines;
 }
@@ -454,21 +638,28 @@ function removeVerse(verseIndex) {
 
 function captureKeyframe() {
     const wrapper = document.querySelector('.image-wrapper');
-    const rect = wrapper.getBoundingClientRect();
-    const containerRect = wrapper.parentElement.getBoundingClientRect();
+    const container = wrapper.parentElement;
+    const referenceScale = parseFloat(container.dataset.referenceScale);
     
-    // Calculate normalized position (0-1) relative to container center
-    const containerCenterX = containerRect.width / 2;
-    const containerCenterY = containerRect.height / 2;
+    // Use the same normalization as in updateCoordinateDisplay
+    const normalizedScale = currentScale / referenceScale;
     
-    const x = (containerCenterX - (rect.left + rect.width / 2)) / (rect.width * currentScale);
-    const y = (containerCenterY - (rect.top + rect.height / 2)) / (rect.height * currentScale);
+    const containerRect = container.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    
+    const containerCenterX = containerRect.left + containerRect.width / 2;
+    const containerCenterY = containerRect.top + containerRect.height / 2;
+    const imageCenterX = wrapperRect.left + wrapperRect.width / 2;
+    const imageCenterY = wrapperRect.top + wrapperRect.height / 2;
+    
+    const normalizedX = (containerCenterX - imageCenterX) / (wrapperRect.width * normalizedScale);
+    const normalizedY = (containerCenterY - imageCenterY) / (wrapperRect.height * normalizedScale);
     
     const keyframe = {
         view: {
-            x: 0.5 + x,
-            y: 0.5 + y,
-            scale: currentScale,
+            x: normalizedX,
+            y: normalizedY,
+            scale: normalizedScale,
             duration: 2
         }
     };
@@ -479,21 +670,33 @@ function captureKeyframe() {
 
 function updateKeyframeList() {
     const keyframeList = document.getElementById('keyframeList');
+    if (!keyframeList) return; // Exit if element doesn't exist
+    
     keyframeList.innerHTML = currentConfig.keyframes.map((keyframe, index) => `
-        <div class="keyframe-item">
+        <div class="keyframe-item" data-keyframe-index="${index}">
             <div>Keyframe ${index + 1}</div>
             <div>Scale: ${keyframe.view.scale.toFixed(2)}</div>
             <div>Position: (${keyframe.view.x.toFixed(2)}, ${keyframe.view.y.toFixed(2)})</div>
-            <input type="number" 
-                   value="${keyframe.view.duration}" 
-                   step="0.1" 
-                   onchange="updateKeyframeDuration(${index}, this.value)"
-                   style="width: 60px;"> seconds
-            <button onclick="removeKeyframe(${index})">Remove</button>
+            <input 
+                type="number" 
+                class="keyframe-duration"
+                value="${keyframe.view.duration}" 
+                step="0.1" 
+                style="width: 60px;"> seconds
+            <button class="remove-keyframe-button">Remove</button>
         </div>
     `).join('');
 
-    setupConfigEventListeners();
+    // Attach event listeners
+    if (keyframeList.querySelector('.keyframe-duration')) {
+        keyframeList.querySelectorAll('.keyframe-duration').forEach((input, index) => {
+            input.addEventListener('change', (e) => updateKeyframeDuration(index, e.target.value));
+        });
+
+        keyframeList.querySelectorAll('.remove-keyframe-button').forEach((button, index) => {
+            button.addEventListener('click', () => removeKeyframe(index));
+        });
+    }
 }
 
 function updateKeyframeDuration(index, duration) {

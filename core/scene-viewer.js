@@ -48,9 +48,13 @@ export class SceneManager {
                 console.log('Handling geometry animation');
                 this.geometryAnimation.handleKeyPress();
             }
+        } else if (e.code === 'KeyQ') {
+            e.preventDefault();
+            console.log('Q pressed - returning to main page');
+            window.location.href = '/';
         }
     }
-
+    
     setupControls(config) {
         // Remove any existing event listener first
         document.removeEventListener('keydown', this.boundKeyHandler);

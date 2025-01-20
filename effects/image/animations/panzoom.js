@@ -24,10 +24,12 @@ export class PanZoomAnimation {
         const image = container.originalImage;
         image.alpha = 0;
     
-        const maxScale = Math.max(
+        const referenceScale = Math.min(
             renderer.width / dimensions.width,
             renderer.height / dimensions.height
-        ) * 2;
+        );
+    
+        const maxScale = referenceScale * 3;
     
         const mainTL = gsap.timeline({ paused: true });
     
@@ -48,12 +50,13 @@ export class PanZoomAnimation {
     
             const view = this.config.keyframes[index].view;
             
-            // Calculate based on renderer dimensions
-            const targetScale = Math.min(view.scale * imageScale, maxScale);
-            const targetX = renderer.width / 2 - 
-                          (view.x * dimensions.width - dimensions.width / 2) * targetScale;
-            const targetY = renderer.height / 2 - 
-                          (view.y * dimensions.height - dimensions.height / 2) * targetScale;
+            // Calculate scale relative to reference scale
+            const targetScale = view.scale * referenceScale;
+            
+            // Invert the x and y translations to match preview behavior
+            // When view.x is positive (moving view right), we move image left (negative)
+            const targetX = renderer.width / 2 + (renderer.width * -view.x);
+            const targetY = renderer.height / 2 + (renderer.height * -view.y);
             
             if (index === 0) {
                 image.scale.set(targetScale);

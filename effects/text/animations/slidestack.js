@@ -26,6 +26,8 @@ export class SlideStackAnimation {
             10     // Corner radius
         );
         this.background.endFill();
+        // Set initial background to invisible
+        this.background.alpha = 0;
     }
 
     createContainer(app) {
@@ -73,11 +75,14 @@ export class SlideStackAnimation {
 
     updateBackground() {
         console.log('updateBackground called. Active lines:', this.activeLines.length);
-
-        this.background.tint = 0x00FF00;
         
         if (this.activeLines.length === 0) {
-            this.background.visible = true;
+            // Fade out background when no lines
+            gsap.to(this.background, {
+                alpha: 0,
+                duration: 0.3,
+                ease: "power2.out"
+            });
             return;
         }
 
@@ -94,7 +99,6 @@ export class SlideStackAnimation {
                     height: globalBounds.height
                 };
             }
-            // console.log('Line bounds:', lineBounds);
             return {
                 x: Math.min(acc.x, localBounds.x),
                 y: Math.max(acc.y, localBounds.y),
@@ -115,6 +119,16 @@ export class SlideStackAnimation {
             10
         );
         this.background.endFill();
+
+        // If this is the first line being added, fade in the background
+        if (this.activeLines.length === 1) {
+            this.background.alpha = 0;
+            gsap.to(this.background, {
+                alpha: 1,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        }
     }
 
     animateNextLine() {

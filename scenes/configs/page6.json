@@ -1,0 +1,86 @@
+{
+  "id": "page6",
+  "image": {
+    "path": "page6.png",
+    "padding": 0.01,
+    "animation": {
+      "type": "panzoom",
+      "config": {
+        "fadeIn": {
+          "duration": 2,
+          "ease": "power2.inOut"
+        },
+        "fadeOut": {
+          "duration": 2,
+          "ease": "power2.inOut"
+        },
+        "transitionEase": "power2.inOut",
+        "keyframes": [
+          {
+            "view": {
+              "x": 0.0016284275002872526,
+              "y": 0.00103981999181781,
+              "scale": 1,
+              "duration": 2
+            }
+          },
+          {
+            "view": {
+              "x": -0.07536840331185428,
+              "y": 0.026502068121493114,
+              "scale": 2.0736000000000003,
+              "duration": 2
+            }
+          },
+          {
+            "view": {
+              "x": -0.12586649598311342,
+              "y": 0.06747819020133647,
+              "scale": 2.0736000000000003,
+              "duration": 2
+            }
+          }
+        ]
+      }
+    }
+  },
+  "text": {
+    "verses": [
+      {
+        "id": 1,
+        "lines": [
+          "Afterwards, Prince Scart",
+          "Decides to parade himself",
+          "With friends, a chosen trinity",
+          "Given to debauchery and divinity,",
+          "Plus Dwarf and Torturer Elect --",
+          "In fact, his Minister of Treasons."
+        ]
+      },
+      {
+        "id": 2,
+        "lines": [
+          "The Prince will be carried",
+          "In a palankeen erect,",
+          "Since it is announced that he",
+          "For good dynastic reasons",
+          "Will soon be married,",
+          "Thus combining sex with sect.",
+          "Going to parade, he",
+          "Pats his chosen lady",
+          "Of ladies. (Ladies",
+          "Think Pile Hades.)"
+        ]
+      }
+    ],
+    "animation": {
+      "type": "slidestack",
+      "config": {
+        "slideDistance": 100,
+        "slideDuration": 0.5,
+        "pushDuration": 0.4,
+        "bottomPadding": 50
+      }
+    }
+  }
+}

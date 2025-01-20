@@ -1,0 +1,95 @@
+{
+  "id": "page2",
+  "image": {
+    "path": "page2.png",
+    "padding": 0.01,
+    "animation": {
+      "type": "panzoom",
+      "config": {
+        "fadeIn": {
+          "duration": 2,
+          "ease": "power2.inOut"
+        },
+        "fadeOut": {
+          "duration": 2,
+          "ease": "power2.inOut"
+        },
+        "transitionEase": "power2.inOut",
+        "keyframes": [
+          {
+            "view": {
+              "x": 0.00048427630748562654,
+              "y": -0.009114742104916099,
+              "scale": 0.9800183116645304,
+              "duration": 2
+            }
+          },
+          {
+            "view": {
+              "x": -0.12179953752055847,
+              "y": 0.18638806887149376,
+              "scale": 1.6934716425563086,
+              "duration": 2
+            }
+          },
+          {
+            "view": {
+              "x": 0.1295843479987135,
+              "y": 0.039538747602079795,
+              "scale": 1.6934716425563086,
+              "duration": 2
+            }
+          },
+          {
+            "view": {
+              "x": 0.00048427630748562654,
+              "y": 0.016418811535791625,
+              "scale": 0.9800183116645304,
+              "duration": 2
+            }
+          }
+        ]
+      }
+    }
+  },
+  "text": {
+    "verses": [
+      {
+        "id": 1,
+        "lines": [
+          "In this many-splendoured mausoleum,",
+          "Where even space becomes moasic,",
+          "Every angle algebraic,",
+          "Pilelish princes fight each other --",
+          "Cousin with cousin, brother with brother --",
+          "Their lands one set of chambers or another ...",
+          "Oh, you should see 'em,",
+          "Warring in a way archaic Spilling blood and strewing brains",
+          "All about their great museum --"
+        ]
+      },
+      {
+        "id": 2,
+        "lines": [
+          "Yet always mopping up the stains",
+          "Each evening elegaic."
+        ]
+      },
+      {
+        "id": 3,
+        "lines": [
+          "But for this, peace reigns."
+        ]
+      }
+    ],
+    "animation": {
+      "type": "slidestack",
+      "config": {
+        "slideDistance": 100,
+        "slideDuration": 0.5,
+        "pushDuration": 0.4,
+        "bottomPadding": 50
+      }
+    }
+  }
+}

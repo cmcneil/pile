@@ -1,0 +1,46 @@
+{
+  "id": "page3",
+  "image": {
+    "path": "page3.png",
+    "padding": 0.01,
+    "animation": {
+      "type": "fadein",
+      "config": {
+        "duration": 1.5,
+        "ease": "power2.inOut"
+      }
+    }
+  },
+  "text": {
+    "verses": [
+      {
+        "id": 1,
+        "lines": [
+          "Within the Pile, Dame Nature plies no trades.",
+          "Within the might Pile there are no groves or glades",
+          "Where zephyrs whisper sweetly. So the droves of blades,",
+          "The warlike troves of armour, ring along arcades",
+          "And staircases and halls. The ambuscades",
+          "Of swordplay find no peace till echo fades",
+          "With daylight's dying down the dull parades."
+        ]
+      },
+      {
+        "id": 2,
+        "lines": [
+          "Then tortured spirits flee among the shades",
+          "Or linger ruined till the morrow's raids."
+        ]
+      }
+    ],
+    "animation": {
+      "type": "slidestack",
+      "config": {
+        "slideDistance": 100,
+        "slideDuration": 0.5,
+        "pushDuration": 0.4,
+        "bottomPadding": 50
+      }
+    }
+  }
+}

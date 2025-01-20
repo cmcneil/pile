@@ -230,14 +230,14 @@ def get_geometry_types():
 @app.route('/api/novels', methods=['GET'])
 def list_novels():
     novels = []
-    for config_file in NOVELS_DIR.glob('*.json'):
+    for config_file in NOVEL_CONFIGS_DIR.glob('*.json'):
         with open(config_file) as f:
             novels.append(json.load(f))
     return jsonify(novels)
 
 @app.route('/api/novels/<novel_id>', methods=['GET'])
 def get_novel(novel_id):
-    novel_path = NOVELS_DIR / f"{novel_id}.json"
+    novel_path = NOVEL_CONFIGS_DIR / f"{novel_id}.json"
     if not novel_path.exists():
         return jsonify({'error': 'Novel not found'}), 404
     
@@ -247,12 +247,40 @@ def get_novel(novel_id):
 @app.route('/api/novels', methods=['POST'])
 def save_novel():
     novel_data = request.json
-    novel_path = NOVELS_DIR / f"{novel_data['id']}.json"
+    novel_path = NOVEL_CONFIGS_DIR / f"{novel_data['id']}.json"
     
     with open(novel_path, 'w') as f:
         json.dump(novel_data, f, indent=2)
     
     return jsonify({'success': True})
+
+@app.route('/api/scenes/<scene_id>', methods=['DELETE'])
+def delete_scene(scene_id):
+    try:
+        # Delete scene config
+        config_path = SCENE_CONFIGS_DIR / f"{scene_id}.json"
+        if config_path.exists():
+            os.remove(config_path)
+            
+        # Also delete associated geometry data if it exists
+        for geometry_type in ['pointcloud', 'lineart']:
+            geometry_path = GEOMETRY_DIR / geometry_type / f"{scene_id}.json"
+            if geometry_path.exists():
+                os.remove(geometry_path)
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/novels/<novel_id>', methods=['DELETE'])
+def delete_novel(novel_id):
+    try:
+        novel_path = NOVEL_CONFIGS_DIR / f"{novel_id}.json"
+        if novel_path.exists():
+            os.remove(novel_path)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Error handlers
 @app.errorhandler(404)

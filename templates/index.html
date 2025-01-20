@@ -142,6 +142,92 @@
             margin: 0 0 5px 0;
             font-size: 1em;
         }
+
+        .modal-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: #4a5568;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .modal-button:hover {
+            background: #2d3748;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            color: #4a5568;
+        }
+
+        .shortcut-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .shortcut-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .shortcut-key {
+            background: #edf2f7;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-right: 12px;
+            font-family: monospace;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .shortcut-description {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -163,64 +249,40 @@
         <!-- Scenes will be loaded here -->
     </div>
 
+    <button class="modal-button" id="instructionsButton">Keyboard Shortcuts</button>
+
+    <div class="modal-overlay" id="instructionsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Keyboard Shortcuts</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <ul class="shortcut-list">
+                <li class="shortcut-item">
+                    <span class="shortcut-key">N</span>
+                    <span class="shortcut-description">Next scene</span>
+                </li>
+                <li class="shortcut-item">
+                    <span class="shortcut-key">P</span>
+                    <span class="shortcut-description">Previous scene</span>
+                </li>
+                <li class="shortcut-item">
+                    <span class="shortcut-key">Enter</span>
+                    <span class="shortcut-description">Advance image animation</span>
+                </li>
+                <li class="shortcut-item">
+                    <span class="shortcut-key">Space</span>
+                    <span class="shortcut-description">Show next line of text</span>
+                </li>
+                <li class="shortcut-item">
+                    <span class="shortcut-key">Q</span>
+                    <span class="shortcut-description">Return to main page</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
     <script>
-        // async function loadNovels() {
-        //     try {
-        //         // Load novels
-        //         const novelsResponse = await fetch('/api/novels');
-        //         const novels = await novelsResponse.json();
-
-        //         const novelGrid = document.getElementById('novelGrid');
-                
-        //         // Process each novel
-        //         const novelCards = await Promise.all(novels.map(async novel => {
-        //             // Get first scene to use as thumbnail
-        //             const firstSceneId = novel.scenes[0];
-        //             let thumbnailPath = '';
-                    
-        //             if (firstSceneId) {
-        //                 try {
-        //                     const sceneResponse = await fetch(`/api/scenes/${firstSceneId}`);
-        //                     if (sceneResponse.ok) {  // Check if response was successful
-        //                         const sceneData = await sceneResponse.json();
-        //                         thumbnailPath = sceneData.image?.path || '';  // Use optional chaining
-        //                     } else {
-        //                         console.warn(`Scene ${firstSceneId} not found`);
-        //                     }
-        //                 } catch (error) {
-        //                     console.error('Error loading scene:', error);
-        //                 }
-        //             }
-
-        //             return `
-        //                 <div class="novel-card">
-        //                     <img class="novel-thumbnail" 
-        //                         src="${thumbnailPath ? `/assets/images/${thumbnailPath}` : '/assets/images/placeholder.jpg'}" 
-        //                         alt="${novel.title}">
-        //                     <div class="novel-info">
-        //                         <h2 class="novel-title">${novel.title}</h2>
-        //                         <div class="novel-stats">
-        //                             ${novel.scenes.length} scene${novel.scenes.length !== 1 ? 's' : ''}
-        //                         </div>
-        //                         <a href="/novel/${novel.id}" class="view-button">View Novel</a>
-        //                     </div>
-        //                 </div>
-        //             `;
-        //         }));
-
-        //         novelGrid.innerHTML = novelCards.join('');
-        //     } catch (error) {
-        //         console.error('Error loading novels:', error);
-        //         // Show error state to user
-        //         const novelGrid = document.getElementById('novelGrid');
-        //         novelGrid.innerHTML = `
-        //             <div class="error-message">
-        //                 Error loading novels. Please try again later.
-        //             </div>
-        //         `;
-        //     }
-        // }
-
         async function loadContent() {
             try {
                 // Load novels
@@ -296,6 +358,24 @@
                 </div>
             `;
         }
+
+        const instructionsButton = document.getElementById('instructionsButton');
+        const instructionsModal = document.getElementById('instructionsModal');
+        const modalClose = document.getElementById('modalClose');
+
+        instructionsButton.addEventListener('click', () => {
+            instructionsModal.style.display = 'flex';
+        });
+
+        modalClose.addEventListener('click', () => {
+            instructionsModal.style.display = 'none';
+        });
+
+        instructionsModal.addEventListener('click', (e) => {
+            if (e.target === instructionsModal) {
+                instructionsModal.style.display = 'none';
+            }
+        });
 
         // Load novels when the page loads
         document.addEventListener('DOMContentLoaded', loadContent);

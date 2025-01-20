@@ -1,0 +1,67 @@
+{
+  "id": "page5",
+  "image": {
+    "path": "page5.png",
+    "padding": 0.01,
+    "animation": {
+      "type": "fadein",
+      "config": {
+        "duration": 1.5,
+        "ease": "power2.inOut"
+      }
+    }
+  },
+  "text": {
+    "verses": [
+      {
+        "id": 1,
+        "lines": [
+          "Courtiers hardly courtly,",
+          "Porters more than portly,",
+          "Dowagers, scroungers, chaps who poweder,",
+          "Gluttons due for strokes quite shortly,",
+          "Rakes who treat the stately hall like stables,",
+          "Gather in a motley crowd, a ",
+          "Mob, about the groaning tables,",
+          "Boozing, dining, swinking, wining,",
+          "To float the court --",
+          "Tout court, in short --",
+          "In port."
+        ]
+      },
+      {
+        "id": 2,
+        "lines": [
+          "Such riff-raff be noticed and abhorred",
+          "At the Prince Scart's o'er-loaded board."
+        ]
+      },
+      {
+        "id": 3,
+        "lines": [
+          "Egged on by eager advocates,",
+          "Since childhood Scart has warred",
+          "With princely cousins. In dispute",
+          "Are certain galleries, complete",
+          "With view. Today Scart celebrates",
+          "A victory."
+        ]
+      },
+      {
+        "id": 4,
+        "lines": [
+          "Well, a defeat ..."
+        ]
+      }
+    ],
+    "animation": {
+      "type": "slidestack",
+      "config": {
+        "slideDistance": 100,
+        "slideDuration": 0.5,
+        "pushDuration": 0.4,
+        "bottomPadding": 50
+      }
+    }
+  }
+}
