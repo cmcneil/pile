@@ -109,7 +109,7 @@ def list_scenes():
                 'id': scene_data['id'],
                 'image': scene_data['image']['path']
             })
-    return jsonify(scenes)
+    return jsonify(sorted(scenes, key=lambda x: x['id']))
 
 @app.route('/api/scenes/<scene_id>', methods=['GET'])
 def get_scene(scene_id):
